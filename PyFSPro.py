@@ -25,6 +25,8 @@ video_height = 768
 window_x = 100  # Position of first window on screen
 window_y = 100
 window_space = 50  # Space between windows
+window_width = 1024 # Default window size
+window_height = 768
 
 # default values for pattern generator
 screen_width = 1920
@@ -63,6 +65,7 @@ gain_inp = 1.0
 gain_out = 1.0
 gain_increment = 0.2
 vec_zoom = 0.1
+loop = False
 
 # presets for text in OSD
 green = (0, 255, 0)
@@ -93,6 +96,7 @@ helptxt = [
         'e/E  Cycle through Equalizer modes (OFF, HIST, CLAHE)',
         'h    Show this help text',
         'i    Toggle image sequence recording',
+        'l    Toggle input video loop mode',
         'm    Input Mode (BOTH, STATUS, IMAGE)',
         'M    Output Mode (IMAGE, VECTOR, BOTH)',
         'n/N  Denoise',
@@ -154,6 +158,8 @@ def set_osd():
         osd_inp += ' Dnz:' + str(dnz_inp_str)
     if dnz_out:
         osd_out += ' Dnz:' + str(dnz_out_str)
+    if imageinput.loop:
+        osd_inp += ' LOOPING'
     if pseudoc is False:
         osd_col += 'Grey'
     else:
@@ -258,6 +264,8 @@ if __name__ == '__main__':
                         help='Height of captured frames')
     parser.add_argument('-k', '--keyboard_shortcuts', action='store_true',
                         help='Show Keyboard Shortcuts')
+    parser.add_argument('-l', '--loop_input', action='store_true',
+                        help='Loop input video')
     parser.add_argument('-mi', '--input_mode', default=mode_in,
                         help='Input Mode')
     parser.add_argument('-mp', '--processing_mode', default=mode_prc,
@@ -274,6 +282,10 @@ if __name__ == '__main__':
                         help='Schlieren Background Pattern Size')
     parser.add_argument('-s', '--stack', default=numframes,
                         help='Image Stacking (No. of frames to stack)')
+    parser.add_argument('-ww', '--window_width', default=window_width,
+                        help='Width of displayed Windows')
+    parser.add_argument('-wh', '--window_height', default=window_height,
+                        help='Height of displayed Windows')
     args = parser.parse_args()
 
     # process command line arguments
@@ -293,6 +305,7 @@ if __name__ == '__main__':
     blr_inp = args.blur_input
     blr_out = args.blur_output
     blr_strength = int(args.blur_strength)
+    loop = args.loop_input
     flip_x = args.flip_x
     flip_y = args.flip_y
     if equ_inp >= 3:
@@ -337,9 +350,12 @@ if __name__ == '__main__':
     if args.output_images != 'none':
         recordi = True
         image_dst = args.output_images
+    window_width = int(args.window_width)
+    window_height = int(args.window_height)
 
     # initialize video input
     imageinput = vs.FrameInput(video_src, args.input_width, args.input_height)
+    imageinput.loop = loop
     video_width = imageinput.frame_width
     video_height = imageinput.frame_height
 
@@ -360,10 +376,10 @@ if __name__ == '__main__':
     # create windows and GUI
     cv2.namedWindow('Processed Output', 0)
     cv2.namedWindow('Input', 0)
-    cv2.resizeWindow('Input', video_width, video_height)
-    cv2.resizeWindow('Processed Output', video_width, video_height)
+    cv2.resizeWindow('Input', window_width, window_height)
+    cv2.resizeWindow('Processed Output', window_width, window_height)
     cv2.moveWindow('Input', window_x, window_y)
-    cv2.moveWindow('Processed Output', window_x + video_width +
+    cv2.moveWindow('Processed Output', window_x + window_width +
                    window_space, window_y)
     set_osd()
 
@@ -377,6 +393,9 @@ if __name__ == '__main__':
     vec_zoom_2 = vec_zoom / 2
     background = np.full((video_height, video_width, 3),
                          imagestack.default_value, np.uint8)
+    
+    # keep image aspect ratio of video input
+    image_height = int(video_height / video_width * window_width)
 
     # main video processing loop
     while True:
@@ -409,6 +428,7 @@ if __name__ == '__main__':
         else:
             inp = cv2.cvtColor(np.uint8(imagestack.inp_frame),
                                cv2.COLOR_GRAY2BGR)
+        inp = cv2.resize(inp, (window_width, image_height))
         if mode_in <= 1:
             cv2.putText(inp, osd_inp, (12, 41), cv2.FONT_HERSHEY_PLAIN,
                         osd_txtsize, black, thickness=osd_txtline,
@@ -512,6 +532,8 @@ if __name__ == '__main__':
                 show_help()
             elif asckey == 105: # i toggle image sequence recording
                 recordi = not recordi
+            elif asckey == 108: # l toggle input video loop mode
+                imageinput.loop = not imageinput.loop
             elif asckey == 109:  # m input mode
                 mode_in += 1
                 if mode_in >= 3:

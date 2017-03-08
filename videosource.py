@@ -15,6 +15,7 @@ import cv2.cv as cv
 
 class FrameInput():
     def __init__(self, video_src, input_width, input_height):
+        self.loop = False
         self.video_src = video_src
         self.input_width = input_width
         self.input_height = input_height
@@ -35,8 +36,12 @@ class FrameInput():
 
     def grab_frame(self):
         self.ret, self.video_frame = self.cam.read()
-        if self.ret is False:
-            self.error_handler()
+        while self.ret is False:
+            if self.loop:
+                self.cam.set(cv.CV_CAP_PROP_POS_FRAMES, 0)
+                self.ret, self.video_frame = self.cam.read()
+            else:
+                self.error_handler()
         self.gray_frame = cv2.cvtColor(self.video_frame, cv2.COLOR_BGR2GRAY)
         return self.gray_frame
 
