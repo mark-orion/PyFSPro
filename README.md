@@ -4,7 +4,8 @@ Multi purpose realtime frame sequence and video processor for a wide range of ap
 * Realtime Astronomical video processing for live presentations.
 * Software image intensifier (night vision).
 * Weak video signal detection and enhancement.
-More information and and a dataflow diagram can be found in the [PyFSPro Wiki](https://github.com/mark-orion/PyFSPro/wiki)
+More information and and a dataflow diagram can be found in the [PyFSPro Wiki](https://github.com/mark-orion/PyFSPro/wiki)  
+The 'doc' folder contains the flow diagram and pattern files that can be used instead of the built-in pattern generator.
 
 ## Main features
 * Resizable ring buffer for image "stacking".
