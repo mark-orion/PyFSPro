@@ -73,6 +73,7 @@ lower/UPPER case = apply to pre/POST processing pipeline.
 * r    Reset Cumulative Summing
 * R    Reset Gains and Offsets
 * s    Enable / change Schlieren pattern
+* S    Toggle input image stabilizer
 * v    Toggle video recording
 * <>   Decrease / Increase Schlieren pattern size
 * x    Flip image around X axis

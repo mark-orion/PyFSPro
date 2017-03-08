@@ -31,7 +31,7 @@ window_height = 768
 # default values for pattern generator
 screen_width = 1920
 screen_height = 1080
-pattern_size = 4
+pattern_size = 0
 pattern_mode = 2
 backgnd = False
 
@@ -66,6 +66,7 @@ gain_out = 1.0
 gain_increment = 0.2
 vec_zoom = 0.1
 loop = False
+stabilizer = False
 
 # presets for text in OSD
 green = (0, 255, 0)
@@ -105,6 +106,7 @@ helptxt = [
         'r    Reset Cumulative Summing',
         'R    Reset Gains and Offsets',
         's    Enable / change Schlieren pattern',
+        'S    Toggle input image stabilizer',
         'v    Toggle video recording',
         '>    Increase Schlieren pattern size',
         '<    Decrease Schlieren pattern size',
@@ -138,6 +140,8 @@ def set_osd():
     osd_col = ('Size: ' + str(video_width) + 'x' +
                str(video_height) + ' Color: ')
     osd_mode = 'Proc:'
+    if stabilizer:
+        osd_inp += ' Stabilizer'
     if equ_inp == 0:
         osd_inp += ' Equ:OFF'
     elif equ_inp == 1:
@@ -262,6 +266,8 @@ if __name__ == '__main__':
                         help='Width of captured frames')
     parser.add_argument('-ih', '--input_height', default=video_height,
                         help='Height of captured frames')
+    parser.add_argument('-is', '--image_stabilizer', action='store_true',
+                        help='Enable input image stabilizer')
     parser.add_argument('-k', '--keyboard_shortcuts', action='store_true',
                         help='Show Keyboard Shortcuts')
     parser.add_argument('-l', '--loop_input', action='store_true',
@@ -306,6 +312,7 @@ if __name__ == '__main__':
     blr_out = args.blur_output
     blr_strength = int(args.blur_strength)
     loop = args.loop_input
+    stabilizer = args.image_stabilizer
     flip_x = args.flip_x
     flip_y = args.flip_y
     if equ_inp >= 3:
@@ -341,6 +348,10 @@ if __name__ == '__main__':
         show_help()
     if args.pattern_mode != 'none':
         pattern_mode = int(args.pattern_mode)
+        if int(args.pattern_size) > 0:
+            pattern_size = int(args.pattern_size)
+        else:
+            pattern_size = 4
         pattern = draw_pattern()
         cv2.imshow('Schlieren Background', pattern)
     if int(args.pattern_size) > 0:
@@ -399,10 +410,21 @@ if __name__ == '__main__':
     
     # keep image aspect ratio of video input
     image_height = int(video_height / video_width * window_width)
+    inp = imageinput.grab_frame()
+    inp_old = inp.copy()
 
     # main video processing loop
     while True:
-        inp = imageinput.grab_frame()
+        inp_raw = imageinput.grab_frame()
+        if stabilizer:
+            transform = cv2.estimateRigidTransform(inp_old, inp_raw, False)
+            if transform is not None:
+                inp = cv2.warpAffine(inp_raw, transform, (video_width, video_height), inp_old, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP)
+            else:
+                inp = inp_raw
+        else:
+            inp = inp_raw
+        inp_old = inp.copy()
         if dnz_inp:
             cv2.fastNlMeansDenoising(inp, inp, dnz_inp_str, 7, 21)
         if equ_inp == 1:
@@ -569,6 +591,8 @@ if __name__ == '__main__':
                 if pattern_size == 0:
                     pattern_size = 4
                 pattern = draw_pattern()
+            elif asckey == 83: # S toggle image stabilizer
+                stabilizer = not stabilizer
             elif asckey == 118: # v toggle video recording
                 recordv = not recordv
             elif asckey == 62: # > increase schlieren pattern size
