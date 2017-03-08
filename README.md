@@ -43,30 +43,30 @@ Press the 'h' key for a list of keyboard shortcuts in the terminal window.
 Run python ./PyFSPro.py --help for a list of command line options.  
 
 ## Keyboard Shortcuts
-lower/UPPER case = apply to input/output pipeline  
-a/A  Auto adjust offset and gain  
-b/B  Blur  
-c    Cycle through Color Palette  
-d    Toggle Dark Frame mode (Rolling Average / Fixed)  
-e/E  Cycle through Equalizer modes (OFF, HIST, CLAHE)  
-h    Show this help text  
-i    Toggle image sequence recording  
-m    Input Mode (BOTH, STATUS, IMAGE)  
-M    Output Mode (IMAGE, VECTOR, BOTH)  
-n/N  Denoise  
-p    Processing Mode (OFF, AVG, DIFF, CUMDEV)  
-q    Terminate Program  
-r    Reset Cumulative Summing  
-R    Reset Gains and Offsets  
-s    Enable / change Schlieren pattern  
-v    Toggle video recording  
->    Increase Schlieren pattern size  
-<    Decrease Schlieren pattern size  
-x    Flip image around X axis  
-y    Flip image around Y axis  
-[/]  Decrease / Increase Input Gain  
-{/}  Decrease / Increase Output Gain  
-SPACE create Screenshot  
-1-9  Set No. of frames in Stack  
+lower/UPPER case = apply to input/output pipeline
+* a/A  Auto adjust offset and gain
+* b/B  Blur
+* c    Cycle through Color Palette
+* d    Toggle Dark Frame mode (Rolling Average / Fixed)
+* e/E  Cycle through Equalizer modes (OFF, HIST, CLAHE)
+* h    Show this help text
+* i    Toggle image sequence recording
+* l    Toggle input video looping
+* m    Input Mode (BOTH, STATUS, IMAGE)
+* M    Output Mode (IMAGE, VECTOR, BOTH)
+* n/N  Denoise
+* p    Processing Mode (OFF, AVG, DIFF, CUMDEV)
+* q    Terminate Program
+* r    Reset Cumulative Summing
+* R    Reset Gains and Offsets
+* s    Enable / change Schlieren pattern
+* v    Toggle video recording
+* <>   Decrease / Increase Schlieren pattern size
+* x    Flip image around X axis
+* y    Flip image around Y axis
+* [/]  Decrease / Increase Input Gain
+* {/}  Decrease / Increase Output Gain
+* SPACE create Screenshot
+* 1-9  Set No. of frames in Stack
 
 Mark Dammer, Forres, Scotland 2017
