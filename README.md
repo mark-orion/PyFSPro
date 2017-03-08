@@ -45,14 +45,14 @@ Press the 'h' key for a list of keyboard shortcuts in the terminal window.
 
 ## Important command line arguments and parameters
 Run 'python PyFSPro.py --help' for a full list of command line options.
-* INPUT_SOURCE
-** name of the opened video file (eg. video.avi) or image sequence (eg. img_%02d.jpg, which will read samples like img_00.jpg, img_01.jpg, img_02.jpg, ...).
-** device – id of the opened video capturing device (i.e. a camera index). If there is a single camera connected, just pass 0.
-* INPUT_MODE: 0 = Input Video & Status Screen, 1 = Status Screen, 2 = Input Video.
-* PROCESSING_MODE: 0 = Passthrough, 1 = Rolling Average, 2 = Difference, 3 = Cumulative Deviation.
-* OUTPUT_MODE: 0 = Output Video, 1 = Vectorscope, 2 = Both.
-* COLOR_MODE: Color palette for Output Video. 0-11 OpenCV color palettes, 12 Grayscale.
-* PATTERN_MODE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
+1. INPUT_SOURCE
+..* name of the opened video file (eg. video.avi) or image sequence (eg. img_%02d.jpg, which will read samples like img_00.jpg, img_01.jpg, img_02.jpg, ...).
+..* device – id of the opened video capturing device (i.e. a camera index). If there is a single camera connected, just pass 0.
+2. INPUT_MODE: 0 = Input Video & Status Screen, 1 = Status Screen, 2 = Input Video.
+3. PROCESSING_MODE: 0 = Passthrough, 1 = Rolling Average, 2 = Difference, 3 = Cumulative Deviation.
+4. OUTPUT_MODE: 0 = Output Video, 1 = Vectorscope, 2 = Both.
+5. COLOR_MODE: Color palette for Output Video. 0-11 OpenCV color palettes, 12 Grayscale.
+6. PATTERN_MODE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
 
 ## Keyboard Shortcuts
 lower/UPPER case = apply to input/output pipeline
