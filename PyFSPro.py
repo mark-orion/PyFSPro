@@ -31,7 +31,7 @@ window_height = 768
 # default values for pattern generator
 screen_width = 1920
 screen_height = 1080
-pattern_size = 0
+pattern_size = 4
 pattern_mode = 2
 backgnd = False
 
@@ -276,7 +276,7 @@ if __name__ == '__main__':
                         help='Save output as video (Path or Prefix).')
     parser.add_argument('-oi', '--output_images', default='none',
                         help='Save output as image sequence (Path or Prefix).')
-    parser.add_argument('-pm', '--pattern_mode', default=pattern_mode,
+    parser.add_argument('-pm', '--pattern_mode', default='none',
                         help='Schlieren Background Pattern (1-3)')
     parser.add_argument('-ps', '--pattern_size', default=pattern_size,
                         help='Schlieren Background Pattern Size')
@@ -339,7 +339,10 @@ if __name__ == '__main__':
         video_src = args.input_source
     if args.keyboard_shortcuts:
         show_help()
-    pattern_mode = int(args.pattern_mode)
+    if args.pattern_mode != 'none':
+        pattern_mode = int(args.pattern_mode)
+        pattern = draw_pattern()
+        cv2.imshow('Schlieren Background', pattern)
     if int(args.pattern_size) > 0:
         pattern_size = int(args.pattern_size)
         pattern = draw_pattern()
