@@ -29,10 +29,10 @@ class FrameStack:
         self.offset_out = 0.0
         self.stacksize = stacksize
         self.stackrange = self.stacksize
-        self.width = width
-        self.height = height
-        self.center_x = self.width / 2
-        self.center_y = self.height / 2
+        self.width = int(width)
+        self.height = int(height)
+        self.center_x = int(self.width / 2)
+        self.center_y = int(self.height / 2)
         self.upper_offset = 0.0002
         self.lower_offset = 0.0001
         self.kernel_size = 7
