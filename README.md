@@ -4,22 +4,24 @@ Multi purpose realtime frame sequence and video processor for a wide range of ap
 * Realtime Astronomical video processing for live presentations.
 * Software image intensifier (night vision).
 * Weak video signal detection and enhancement.
+More information and and a dataflow diagram can be found in the [PyFSPro Wiki](https://github.com/mark-orion/PyFSPro/wiki)
 
 ## Main features
 * Resizable ring buffer for image "stacking".
 * High accuracy processing core using floating point maths for image processing.
 * Input from Camera, Image sequence or Video file.
 * Output to Screen, Image sequence or Video file.
-* Pre- and Postprocessing chains for basic image enhancement functions.
+* Pre- and Postprocessing chains with basic image enhancement functions.
 * Vectorscope for the visualization of small changes in video stream.
 * Built-in pattern generator for Schlieren Videography.
 * Parameters can be set through command line options.
 * Most Parameters can be changed on the fly via keyboard shortcuts.
-* framestacker.py library can be re-used in other projects and only requires Numpy.
+* framestacker.py library can be re-used in other projects. It does not depend on OpenCV and only requires Numpy.
 
-## Image enhancement functions
+## Image enhancement and analysis functions
 * Image integration (rolling average)
 * Image difference to fixed reference (dark) frame or rolling average
+* Cumulative deviation of stacked images
 * Automatic or manual gain and offset
 * Histogram Equalization
 * Contrast Limited Adaptive Histogram Equalization (CLAHE)
@@ -29,18 +31,28 @@ Multi purpose realtime frame sequence and video processor for a wide range of ap
 
 ## Requirements
 * Tested with Python 2.7, not ported to Python 3 yet!
-* Numpy (tested with version 
+* Numpy (tested with version 1.11)
 * OpenCV with Python bindings (tested with version 2.4.9)
-* [Scikit-Video](http://www.scikit-video.org) this library is needed as a workaround for a video recording bug in Linux OpenCV 2.4
+* [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 On Debian / Ubuntu based systems the requirements can be installed with the following commands:  
 sudo apt-get install python-numpy python-opencv  
 sudo pip install sk-video
 
 ## Usage
 Installation: Clone or download PyFSPro  
-Run the program: python ./PyFSPro.py  
+Run the program: python PyFSPro.py  
 Press the 'h' key for a list of keyboard shortcuts in the terminal window.  
-Run python ./PyFSPro.py --help for a list of command line options.  
+
+## Important command line arguments and parameters
+Run 'python PyFSPro.py --help' for a full list of command line options.
+* INPUT_SOURCE
+** name of the opened video file (eg. video.avi) or image sequence (eg. img_%02d.jpg, which will read samples like img_00.jpg, img_01.jpg, img_02.jpg, ...).
+** device – id of the opened video capturing device (i.e. a camera index). If there is a single camera connected, just pass 0.
+* INPUT_MODE: 0 = Input Video & Status Screen, 1 = Status Screen, 2 = Input Video.
+* PROCESSING_MODE: 0 = Passthrough, 1 = Rolling Average, 2 = Difference, 3 = Cumulative Deviation.
+* OUTPUT_MODE: 0 = Output Video, 1 = Vectorscope, 2 = Both.
+* COLOR_MODE: Color palette for Output Video. 0-11 OpenCV color palettes, 12 Grayscale.
+* PATTERN_MODE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
 
 ## Keyboard Shortcuts
 lower/UPPER case = apply to input/output pipeline
