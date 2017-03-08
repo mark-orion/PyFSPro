@@ -55,7 +55,7 @@ Run 'python PyFSPro.py --help' for a full list of command line options.
 * PATTERN_MODE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
 
 ## Keyboard Shortcuts
-lower/UPPER case = apply to input/output pipeline
+lower/UPPER case = apply to pre/POST processing pipeline.
 * a/A  Auto adjust offset and gain
 * b/B  Blur
 * c    Cycle through Color Palette
