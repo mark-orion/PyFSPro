@@ -12,6 +12,7 @@ import cv2.cv as cv
 # local imports
 import videosource as vs
 import framestacker as fs
+import filters as flt
 
 #scikit-video (scikit-video.org) is used for recording because of OpenCV Linux bug
 from skvideo.io import FFmpegWriter as VideoWriter
@@ -54,6 +55,9 @@ dnz_inp = False
 dnz_out = False
 dnz_inp_str = 33
 dnz_out_str = 33
+flt_inp = 0
+flt_out = 0
+flt_strength_increment = 0.1
 flip_x = False
 flip_y = False
 mode_in = 0
@@ -89,31 +93,36 @@ colormaps = [
 # help text array
 helptxt = [
         'KEYBOARD SHORTCUTS',
-        'lower/UPPER case = apply to input/output pipeline',
+        'lower/UPPER case = apply to input/OUTPUT processing chain.',
         'a/A  Auto adjust offset and gain',
         'b/B  Blur',
-        'c    Cycle through Color Palette',
+        'c    Cycle Color Palette',
         'd    Toggle Dark Frame mode (Rolling Average / Fixed)',
-        'e/E  Cycle through Equalizer modes (OFF, HIST, CLAHE)',
+        'e/E  Cycle Equalizer modes (OFF, HIST, CLAHE)',
+        'f/F  Cycle Filters defined in filters.py',
         'h    Show this help text',
-        'i    Toggle image sequence recording',
+        'i    Toggle image stabilizer',
         'l    Toggle input video loop mode',
-        'm    Input Mode (BOTH, STATUS, IMAGE)',
-        'M    Output Mode (IMAGE, VECTOR, BOTH)',
+        'm    Cycle Input Mode (BOTH, STATUS, IMAGE)',
+        'M    Cycle Output Mode (IMAGE, VECTOR, BOTH)',
         'n/N  Denoise',
-        'p    Processing Mode (OFF, AVG, DIFF, CUMSUM)',
+        'p    Cycle Processing Mode (OFF, AVG, DIFF, CUMSUM)',
         'q    Terminate Program',
         'r    Reset Cumulative Summing',
         'R    Reset Gains and Offsets',
-        's    Enable / change Schlieren pattern',
-        'S    Toggle input image stabilizer',
+        's    ',
+        'S    ',
         'v    Toggle video recording',
+        'V    Toggle image sequence recording',
+        '?    Cycle Schlieren pattern types',
         '>    Increase Schlieren pattern size',
         '<    Decrease Schlieren pattern size',
         'x    Flip image around X axis',
         'y    Flip image around Y axis',
         '[/]  Decrease / Increase Input Gain',
         '{/}  Decrease / Increase Output Gain',
+        '-/+  Decrease / Increase Input Filter Strength',
+        '_/=  Decrease / Increase Output Filter Strength',
         'SPACE create Screenshot',
         '1-9  Set No. of frames in Stack',
         ]
@@ -162,6 +171,10 @@ def set_osd():
         osd_inp += ' Dnz:' + str(dnz_inp_str)
     if dnz_out:
         osd_out += ' Dnz:' + str(dnz_out_str)
+    if flt_inp > 0:
+         osd_inp += ' Flt: ' + str(flt_inp_name) + ' ' +  "{:3.2f}".format(flt_inp_strength)
+    if flt_out > 0:
+         osd_out += ' Flt: ' + str(flt_out_name) + ' ' +  "{:3.2f}".format(flt_out_strength)
     if imageinput.loop:
         osd_inp += ' LOOPING'
     if pseudoc is False:
@@ -237,56 +250,64 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
 
     # command line parser
-    parser = argparse.ArgumentParser(description='Python Schlieren Imager')
-    parser.add_argument('-bi', '--blur_input', action='store_true',
-                        help='Blur Input')
-    parser.add_argument('-bo', '--blur_output', action='store_true',
-                        help='Blur Output')
-    parser.add_argument('-bs', '--blur_strength', default=blr_strength,
-                        help='Blur Strength (Kernel Size')
-    parser.add_argument('-c', '--color_mode', default=color_mode,
-                        help='Pseudocolor mode (1-11)')
-    parser.add_argument('-di', '--denoise_input', default='none',
-                        help='Input Denoise Strength')
-    parser.add_argument('-do', '--denoise_output', default='none',
-                        help='Output Denoise Strength')
-    parser.add_argument('-ei', '--equalize_input', default=equ_inp,
-                        help='Input Equalization Mode')
-    parser.add_argument('-eo', '--equalize_output', default=equ_out,
-                        help='Output Equalization Mode')
-    parser.add_argument('-fx', '--flip_x', action='store_true',
-                        help='Flip around X axis')
-    parser.add_argument('-fy', '--flip_y', action='store_true',
-                        help='Flip around Y axis')
-    parser.add_argument('-gi', '--gain_input', default=gain_inp, help='Input Gain')
-    parser.add_argument('-go', '--gain_output', default=gain_out, help='Output Gain')
-    parser.add_argument('-i', '--input_source', default=video_src,
+    parser = argparse.ArgumentParser(description='Python Frame Sequence Processor')
+    parser.add_argument('-is', '--input_source', default=video_src,
                         help='Input Source, filename or camera index')
     parser.add_argument('-iw', '--input_width', default=video_width,
                         help='Width of captured frames')
     parser.add_argument('-ih', '--input_height', default=video_height,
                         help='Height of captured frames')
-    parser.add_argument('-is', '--image_stabilizer', action='store_true',
+    parser.add_argument('-ib', '--input_blur', action='store_true',
+                        help='Blur Input')
+    parser.add_argument('-ie', '--input_equalize', default=equ_inp,
+                        help='Input Equalization Mode')
+    parser.add_argument('-if', '--input_filter', default=flt_inp,
+                        help='Set Input Filter')
+    parser.add_argument('-ifs', '--input_filter_strength', default='none',
+                        help='Set Input Filter Strength')
+    parser.add_argument('-ig', '--input_gain', default=gain_inp, help='Input Gain')
+    parser.add_argument('-il', '--loop_input', action='store_true',
+                        help='Loop input video')
+    parser.add_argument('-im', '--input_mode', default=mode_in,
+                        help='Display Mode Input Window')
+    parser.add_argument('-in', '--input_denoise', default='none',
+                        help='Input Denoise Strength')
+    parser.add_argument('-i', '--image_stabilizer', action='store_true',
                         help='Enable input image stabilizer')
+    parser.add_argument('-bs', '--blur_strength', default=blr_strength,
+                        help='Blur Strength (Kernel Size')
+    parser.add_argument('-fx', '--flip_x', action='store_true',
+                        help='Flip around X axis')
+    parser.add_argument('-fy', '--flip_y', action='store_true',
+                        help='Flip around Y axis')
     parser.add_argument('-k', '--keyboard_shortcuts', action='store_true',
                         help='Show Keyboard Shortcuts')
-    parser.add_argument('-l', '--loop_input', action='store_true',
-                        help='Loop input video')
-    parser.add_argument('-mi', '--input_mode', default=mode_in,
-                        help='Input Mode')
-    parser.add_argument('-mp', '--processing_mode', default=mode_prc,
-                        help='Processing Mode')
-    parser.add_argument('-mo', '--output_mode', default=mode_out,
-                        help='Output Mode')
+    parser.add_argument('-ob', '--output_blur', action='store_true',
+                        help='Blur Output')
+    parser.add_argument('-oc', '--color_mode', default=color_mode,
+                        help='Output Pseudocolor mode (1-11)')
+    parser.add_argument('-oe', '--output_equalize', default=equ_out,
+                        help='Output Equalization Mode')
+    parser.add_argument('-of', '--output_filter', default=flt_out,
+                        help='Set Output Filter')
+    parser.add_argument('-ofs', '--output_filter_strength', default='none',
+                        help='Set Output Filter Strength')
+    parser.add_argument('-og', '--output_gain', default=gain_out, help='Output Gain')
+    parser.add_argument('-on', '--output_denoise', default='none',
+                        help='Output Denoise Strength')   
+    parser.add_argument('-om', '--output_mode', default=mode_out,
+                        help='Display Mode Output Window')
     parser.add_argument('-ov', '--output_video', default='none',
                         help='Save output as video (Path or Prefix).')
     parser.add_argument('-oi', '--output_images', default='none',
                         help='Save output as image sequence (Path or Prefix).')
-    parser.add_argument('-pm', '--pattern_mode', default='none',
-                        help='Schlieren Background Pattern (1-3)')
+    parser.add_argument('-pm', '--processing_mode', default=mode_prc,
+                        help='Set Processing Mode')
     parser.add_argument('-ps', '--pattern_size', default=pattern_size,
                         help='Schlieren Background Pattern Size')
-    parser.add_argument('-s', '--stack', default=numframes,
+    parser.add_argument('-pt', '--pattern_type', default='none',
+                        help='Schlieren Background Pattern (1-3)')
+    parser.add_argument('-pz', '--stack_size', default=numframes,
                         help='Image Stacking (No. of frames to stack)')
     parser.add_argument('-ww', '--window_width', default=window_width,
                         help='Width of displayed Windows')
@@ -295,22 +316,24 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # process command line arguments
-    if args.denoise_input != 'none':
+    if args.input_denoise != 'none':
         dnz_inp = True
-        dnz_inp_str = float(args.denoise_input)
-    if args.denoise_output != 'none':
+        dnz_inp_str = float(args.input_denoise)
+    if args.output_denoise != 'none':
         dnz_out = True
-        dnz_out_str = float(args.denoise_output)
-    equ_inp = int(args.equalize_input)
-    equ_out = int(args.equalize_output)
+        dnz_out_str = float(args.output_denoise)
+    equ_inp = int(args.input_equalize)
+    equ_out = int(args.output_equalize)
     mode_out = int(args.output_mode)
     mode_in = int(args.input_mode)
     mode_prc = int(args.processing_mode)
-    gain_inp = float(args.gain_input)
-    gain_out = float(args.gain_output)
-    blr_inp = args.blur_input
-    blr_out = args.blur_output
+    gain_inp = float(args.input_gain)
+    gain_out = float(args.output_gain)
+    blr_inp = args.input_blur
+    blr_out = args.output_blur
     blr_strength = int(args.blur_strength)
+    flt_inp = int(args.input_filter)
+    flt_out = int(args.output_filter)
     loop = args.loop_input
     stabilizer = args.image_stabilizer
     flip_x = args.flip_x
@@ -335,8 +358,8 @@ if __name__ == '__main__':
         mode_out = 2
     elif mode_out <= -1:
         mode_out = 0
-    if int(args.stack) > 0:
-        numframes = int(args.stack)
+    if int(args.stack_size) > 0:
+        numframes = int(args.stack_size)
     if int(args.color_mode) <= 11 and int(args.color_mode) >= 0:
         color_mode = int(args.color_mode)
         pseudoc = True
@@ -346,8 +369,9 @@ if __name__ == '__main__':
         video_src = args.input_source
     if args.keyboard_shortcuts:
         show_help()
-    if args.pattern_mode != 'none':
-        pattern_mode = int(args.pattern_mode)
+        sys.exit(0)
+    if args.pattern_type != 'none':
+        pattern_mode = int(args.pattern_type)
         if int(args.pattern_size) > 0:
             pattern_size = int(args.pattern_size)
         else:
@@ -377,6 +401,18 @@ if __name__ == '__main__':
     time.sleep(1)
     nokey = cv2.waitKey(5)  # get value for "no key pressed"
 
+    # load filter kernels
+    kernels = flt.Kernels()
+    numkernels = kernels.get_numkernels()
+    flt_inp_name, inp_kernel, flt_inp_strength = kernels.get_kernel(flt_inp)
+    flt_out_name, out_kernel, flt_out_strength = kernels.get_kernel(flt_out)
+    if args.input_filter_strength != 'none':
+        flt_inp_strength = float(args.input_filter_strength)
+    if args.output_filter_strength != 'none':
+        flt_out_strength = float(args.output_filter_strength)
+    flt_inp_kernel = inp_kernel * flt_inp_strength
+    flt_out_kernel = out_kernel * flt_out_strength
+    
     # prepare stack
     imagestack = fs.FrameStack(numframes, video_width, video_height)
     imagestack.gain_inp = gain_inp
@@ -410,27 +446,29 @@ if __name__ == '__main__':
     
     # keep image aspect ratio of video input
     image_height = int(video_height / video_width * window_width)
+    
+    # prepare image stabilizer
     inp = imageinput.grab_frame()
     inp_old = inp.copy()
+    inp_raw = inp.copy()
 
     # main video processing loop
     while True:
-        inp_raw = imageinput.grab_frame()
-        if stabilizer:
-            transform = cv2.estimateRigidTransform(inp_old, inp_raw, False)
-            if transform is not None:
-                inp = cv2.warpAffine(inp_raw, transform, (video_width, video_height), inp_old, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP)
-            else:
-                inp = inp_raw
-        else:
-            inp = inp_raw
-        inp_old = inp.copy()
+        inp = imageinput.grab_frame()
         if dnz_inp:
             cv2.fastNlMeansDenoising(inp, inp, dnz_inp_str, 7, 21)
         if equ_inp == 1:
             inp = cv2.equalizeHist(inp)
         elif equ_inp == 2:
             inp = clahe.apply(inp)
+        elif flt_inp != 0:
+            inp = cv2.filter2D(inp, -1, flt_inp_kernel)
+        if stabilizer:
+            back = np.nanmean(inp)
+            transform = cv2.estimateRigidTransform(inp_old, inp, False)
+            if transform is not None:
+                inp = cv2.warpAffine(inp, transform, (video_width, video_height), inp_raw, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+        inp_old = inp
         imagestack.addFrame(inp)
         if mode_prc == 0:
             dsp = imagestack.getINP()
@@ -446,6 +484,8 @@ if __name__ == '__main__':
             dsp = clahe.apply(dsp)
         if dnz_out:
             cv2.fastNlMeansDenoising(dsp, dsp, dnz_out_str, 7, 21)
+        elif flt_out != 0:
+            dsp = cv2.filter2D(dsp, -1, flt_out_kernel)
 
         # create input image
         if mode_in == 1:
@@ -545,18 +585,30 @@ if __name__ == '__main__':
             elif asckey == 100:  # d use current average as dark frame
                 dyn_dark = not dyn_dark
                 imagestack.dyn_dark = dyn_dark
-            elif asckey == 101:  # e toggle input equalization
+            elif asckey == 101:  # e Cycle input equalization
                 equ_inp += 1
                 if equ_inp >= 3:
                     equ_inp = 0
-            elif asckey == 69:  # E toggle output equalization
+            elif asckey == 69:  # E Cycle output equalization
                 equ_out += 1
                 if equ_out >= 3:
                     equ_out = 0
+            elif asckey == 102:  # f Cycle input filters
+                flt_inp += 1
+                if flt_inp >= numkernels:
+                    flt_inp = 0
+                flt_inp_name, inp_kernel, flt_inp_strength = kernels.get_kernel(flt_inp)
+                flt_inp_kernel = inp_kernel * flt_inp_strength
+            elif asckey == 70:  # F Cycle output filters
+                flt_out += 1
+                if flt_out >= numkernels:
+                    flt_out = 0
+                flt_out_name, out_kernel, flt_out_strength = kernels.get_kernel(flt_out)
+                flt_out_kernel = out_kernel * flt_out_strength
             elif asckey == 104:  # h show help
                 show_help()
-            elif asckey == 105: # i toggle image sequence recording
-                recordi = not recordi
+            elif asckey == 105: # i toggle image stabilizer
+                stabilizer = not stabilizer
             elif asckey == 108: # l toggle input video loop mode
                 imageinput.loop = not imageinput.loop
             elif asckey == 109:  # m input mode
@@ -584,17 +636,21 @@ if __name__ == '__main__':
                 imagestack.gain_out = gain_inp
                 imagestack.offset_inp = 0
                 imagestack.offset_out = 0
-            elif asckey == 115:  # s schlieren pattern
+            elif asckey == 115: # s toggle input
+                stabilizer = not stabilizer
+            elif asckey == 83: # S toggle output
+                stabilizer = not stabilizer
+            elif asckey == 118: # v toggle video recording
+                recordv = not recordv
+            elif asckey == 86: # V toggle image sequence recording
+                recordi = not recordi
+            elif asckey == 63:  # ? cycle schlieren pattern type
                 pattern_mode += 1
                 if pattern_mode > 3:
                     pattern_mode = 1
                 if pattern_size == 0:
                     pattern_size = 4
                 pattern = draw_pattern()
-            elif asckey == 83: # S toggle image stabilizer
-                stabilizer = not stabilizer
-            elif asckey == 118: # v toggle video recording
-                recordv = not recordv
             elif asckey == 62: # > increase schlieren pattern size
                 pattern_size += 1
                 pattern = draw_pattern()
@@ -613,6 +669,18 @@ if __name__ == '__main__':
                 imagestack.gain_out += gain_increment
             elif asckey == 123:  # { decrease output gain
                 imagestack.gain_out -= gain_increment
+            elif asckey == 43:  # + increase input filter strength
+                flt_inp_strength += flt_strength_increment
+                flt_inp_kernel = inp_kernel * flt_inp_strength
+            elif asckey == 45:  # - decrease input filter strength
+                flt_inp_strength -= flt_strength_increment
+                flt_inp_kernel = inp_kernel * flt_inp_strength
+            elif asckey == 61:  # = increase output filter strength
+                flt_out_strength += flt_strength_increment
+                flt_out_kernel = out_kernel * flt_out_strength
+            elif asckey == 95:  # _ decrease output filter strength
+                flt_out_strength -= flt_strength_increment
+                flt_out_kernel = out_kernel * flt_out_strength
             elif asckey == 32:  # SPACE create screenshot
                 filename = output_path + 'Screenshot-' + gettime() + '.bmp'
                 cv2.imwrite(filename, out)

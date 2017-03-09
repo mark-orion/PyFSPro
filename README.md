@@ -12,7 +12,7 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * High accuracy processing core using floating point maths for image processing.
 * Input from Camera, Image sequence or Video file.
 * Output to Screen, Image sequence or Video file.
-* Pre- and Postprocessing chains with basic image enhancement functions.
+* Input and Output processing chains with basic image enhancement functions.
 * Vectorscope for the visualization of small changes in video stream.
 * Built-in pattern generator for Schlieren Videography.
 * Parameters can be set through command line options.
@@ -53,33 +53,36 @@ Run 'python PyFSPro.py --help' for a full list of command line options.
 * PROCESSING_MODE: 0 = Passthrough, 1 = Rolling Average, 2 = Difference, 3 = Cumulative Deviation.
 * OUTPUT_MODE: 0 = Output Video, 1 = Vectorscope, 2 = Both.
 * COLOR_MODE: Color palette for Output Video. 0-11 OpenCV color palettes, 12 Grayscale.
-* PATTERN_MODE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
+* PATTERN_TYPE: Pattern for Schlieren Videography Pattern Generator. 1 = Chequerboard, 2 = Horizontal Stripes, 3 = Vertical Stripes.
 
 ## Keyboard Shortcuts
-lower/UPPER case = apply to pre/POST processing pipeline.
+lower/UPPER case = apply to input/OUTPUT processing chain.
 * a/A  Auto adjust offset and gain
 * b/B  Blur
-* c    Cycle through Color Palette
+* c    Cycle Color Palettes
 * d    Toggle Dark Frame mode (Rolling Average / Fixed)
-* e/E  Cycle through Equalizer modes (OFF, HIST, CLAHE)
+* e/E  Cycle Equalizer modes (OFF, HIST, CLAHE)
+* f/F  Cycle Filters defined in filters.py
 * h    Show this help text
-* i    Toggle image sequence recording
+* i    Toggle image stabilizer
 * l    Toggle input video looping
-* m    Input Mode (BOTH, STATUS, IMAGE)
-* M    Output Mode (IMAGE, VECTOR, BOTH)
+* m    Cycle Input Modes (BOTH, STATUS, IMAGE)
+* M    Cycle Output Modes (IMAGE, VECTOR, BOTH)
 * n/N  Denoise
-* p    Processing Mode (OFF, AVG, DIFF, CUMDEV)
+* p    Cycle Processing Modes (OFF, AVG, DIFF, CUMDEV)
 * q    Terminate Program
 * r    Reset Cumulative Summing
 * R    Reset Gains and Offsets
-* s    Enable / change Schlieren pattern
-* S    Toggle input image stabilizer
 * v    Toggle video recording
+* V    Toggle image sequence recording
+* ?    Cycle Schlieren pattern types
 * <>   Decrease / Increase Schlieren pattern size
 * x    Flip image around X axis
 * y    Flip image around Y axis
 * [/]  Decrease / Increase Input Gain
 * {/}  Decrease / Increase Output Gain
+* -/+  Decrease / Increase Input Filter Strength
+* _/=  Decrease / Increase Output Filter Strength
 * SPACE create Screenshot
 * 1-9  Set No. of frames in Stack
 
