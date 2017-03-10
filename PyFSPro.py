@@ -10,13 +10,15 @@ import cv2
 import cv2.cv as cv
 
 # local imports
-import config as cnf
+import config
 import videosource as vs
 import framestacker as fs
 import filters as flt
 
 #scikit-video (scikit-video.org) is used for recording because of OpenCV Linux bug
 from skvideo.io import FFmpegWriter as VideoWriter
+
+cnf = config.Settings()
 
 def nothing(par):
     return
@@ -259,12 +261,12 @@ if __name__ == '__main__':
             cnf.pattern_size = int(args.pattern_size)
         else:
             cnf.pattern_size = 4
-        pattern = draw_pattern()
-        cv2.imshow('Schlieren Background', pattern)
+        cnf.pattern = draw_pattern()
+        cv2.imshow('Schlieren Background', cnf.pattern)
     if int(args.pattern_size) > 0:
         cnf.pattern_size = int(args.pattern_size)
-        pattern = draw_pattern()
-        cv2.imshow('Schlieren Background', pattern)
+        cnf.pattern = draw_pattern()
+        cv2.imshow('Schlieren Background', cnf.pattern)
     if args.output_video != 'none':
         cnf.recordv = True
         cnf.video_dst = args.output_video
@@ -519,10 +521,10 @@ if __name__ == '__main__':
                 imagestack.gain_out = cnf.gain_out
                 imagestack.offset_inp = 0
                 imagestack.offset_out = 0
-            elif asckey == 115: # s toggle input
-                cnf.stabilizer = not cnf.stabilizer
-            elif asckey == 83: # S toggle output
-                cnf.stabilizer = not cnf.stabilizer
+            elif asckey == 115: # s save settings
+                cnf.write_config(cnf.cfgfilename)
+            elif asckey == 83: # S load settings
+                cnf.read_config(cnf.cfgfilename)
             elif asckey == 118: # v toggle video recording
                 cnf.recordv = not cnf.recordv
             elif asckey == 86: # V toggle image sequence recording
@@ -533,13 +535,13 @@ if __name__ == '__main__':
                     cnf.pattern_mode = 1
                 if cnf.pattern_size == 0:
                     cnf.pattern_size = 4
-                pattern = draw_pattern()
+                cnf.pattern = draw_pattern()
             elif asckey == 62: # > increase schlieren pattern size
                 cnf.pattern_size += 1
-                pattern = draw_pattern()
+                cnf.pattern = draw_pattern()
             elif asckey == 60: # < decrease schlieren pattern size
                 cnf.pattern_size -= 1
-                pattern = draw_pattern()
+                cnf.pattern = draw_pattern()
             elif asckey == 120:  # x flip around X axis
                 imagestack.flip_x = not imagestack.flip_x
             elif asckey == 121:  # y flip around Y axis
@@ -571,6 +573,6 @@ if __name__ == '__main__':
                 cnf.numframes = asckey - 48
                 imagestack.initStack(cnf.numframes)
             if cnf.backgnd:
-                cv2.imshow('Schlieren Background', pattern)
+                cv2.imshow('Schlieren Background', cnf.pattern)
             set_osd()
     sys.exit(0)
