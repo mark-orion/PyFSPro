@@ -81,7 +81,8 @@ class Settings:
         self.offset_out = 0
         self.vec_zoom = 0.1
         self.loop = False
-        self.stabilizer = False
+        self.stb_inp = False
+        self.stb_out = False
         
         # presets for text in OSD
         self.green = (0, 255, 0)
@@ -112,7 +113,7 @@ class Settings:
                 'e/E  Cycle Equalizer modes (OFF, HIST, CLAHE)',
                 'f/F  Cycle Filters defined in filters.py',
                 'h    Show this help text',
-                'i    Toggle image stabilizer',
+                'i/I  Toggle image stabilizer',
                 'l    Toggle input video loop mode',
                 'm    Cycle Input Mode (BOTH, STATUS, IMAGE)',
                 'M    Cycle Output Mode (IMAGE, VECTOR, BOTH)',
@@ -159,7 +160,7 @@ class Settings:
         self.Config.set('Input','mode_in', self.mode_in)
         self.Config.set('Input','gain_inp', self.gain_inp)
         self.Config.set('Input','offset_inp', self.offset_inp)
-        self.Config.set('Input','stabilizer', self.stabilizer)
+        self.Config.set('Input','stb_inp', self.stb_inp)
         
         # Section 'Processor'
         self.Config.set('Processor','mode_prc', self.mode_prc)
@@ -184,6 +185,7 @@ class Settings:
         self.Config.set('Output','color_mode', self.color_mode)
         self.Config.set('Output','pseudoc', self.pseudoc)
         self.Config.set('Output','vec_zoom', self.vec_zoom)
+        self.Config.set('Output','stb_out', self.stb_out)
         
         # Section 'Display'
         self.Config.set('Display','window_x', self.window_x)
@@ -223,7 +225,7 @@ class Settings:
             self.mode_in = int(self.Config.get('Input','mode_in'))
             self.gain_inp = float(self.Config.get('Input','gain_inp'))
             self.offset_inp = float(self.Config.get('Input','offset_inp'))
-            self.stabilizer = self.Config.getboolean('Input','stabilizer')
+            self.stb_inp = self.Config.getboolean('Input','stb_inp')
             self.mode_prc = int(self.Config.get('Processor','mode_prc'))
             self.dyn_dark = self.Config.getboolean('Processor','dyn_dark')
             self.blr_strength = int(self.Config.get('Processor','blr_strength'))
@@ -244,6 +246,7 @@ class Settings:
             self.color_mode = int(self.Config.get('Output','color_mode'))
             self.pseudoc = self.Config.getboolean('Output','pseudoc')
             self.vec_zoom = float(self.Config.get('Output','vec_zoom'))
+            self.stb_out = self.Config.getboolean('Output','stb_out')
             self.window_x = int(self.Config.get('Display','window_x'))
             self.window_y = int(self.Config.get('Display','window_y'))
             self.window_width = int(self.Config.get('Display','window_width'))

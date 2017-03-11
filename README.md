@@ -82,7 +82,7 @@ lower/UPPER case = apply to input/OUTPUT processing chain.
 * e/E  Cycle Equalizer modes (OFF, HIST, CLAHE)
 * f/F  Cycle Filters defined in filters.py
 * h    Show this help text
-* i    Toggle image stabilizer
+* i/I  Toggle image stabilizer
 * l    Toggle input video looping
 * m    Cycle Input Modes (BOTH, STATUS, IMAGE)
 * M    Cycle Output Modes (IMAGE, VECTOR, BOTH)

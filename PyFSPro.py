@@ -36,7 +36,7 @@ def set_osd():
     cnf.osd_col = ('Size: ' + str(cnf.video_width) + 'x' +
                str(cnf.video_height) + ' Color: ')
     cnf.osd_mode = 'Proc:'
-    if cnf.stabilizer:
+    if cnf.stb_inp:
         cnf.osd_inp += ' Stabilizer'
     if cnf.equ_inp == 0:
         cnf.osd_inp += ' Equ:OFF'
@@ -44,6 +44,8 @@ def set_osd():
         cnf.osd_inp += ' Equ:Hist'
     elif cnf.equ_inp == 2:
         cnf.osd_inp += ' Equ:CLAHE'
+    if cnf.stb_out:
+        cnf.osd_out += ' Stabilizer'
     if cnf.equ_out == 0:
         cnf.osd_out += ' Equ:OFF'
     elif cnf.equ_out == 1:
@@ -184,7 +186,7 @@ if __name__ == '__main__':
                         help='Display Mode Input Window')
     parser.add_argument('-in', '--input_denoise', default='none',
                         help='Input Denoise Strength')
-    parser.add_argument('-i', '--image_stabilizer', action='store_true',
+    parser.add_argument('-ii', '--input_stabilizer', action='store_true',
                         help='Enable input image stabilizer')
     parser.add_argument('-bs', '--blur_strength', default=cnf.blr_strength,
                         help='Blur Strength (Kernel Size')
@@ -205,13 +207,15 @@ if __name__ == '__main__':
     parser.add_argument('-ofs', '--output_filter_strength', default='none',
                         help='Set Output Filter Strength')
     parser.add_argument('-og', '--output_gain', default=cnf.gain_out, help='Output Gain')
+    parser.add_argument('-oi', '--output_stabilizer', action='store_true',
+                        help='Enable output image stabilizer')
     parser.add_argument('-on', '--output_denoise', default='none',
                         help='Output Denoise Strength')   
     parser.add_argument('-om', '--output_mode', default=cnf.mode_out,
                         help='Display Mode Output Window')
     parser.add_argument('-ov', '--output_video', default='none',
                         help='Save output as video (Path or Prefix).')
-    parser.add_argument('-oi', '--output_images', default='none',
+    parser.add_argument('-os', '--output_images', default='none',
                         help='Save output as image sequence (Path or Prefix).')
     parser.add_argument('-pm', '--processing_mode', default=cnf.mode_prc,
                         help='Set Processing Mode')
@@ -252,7 +256,8 @@ if __name__ == '__main__':
     cnf.flt_inp = int(args.input_filter)
     cnf.flt_out = int(args.output_filter)
     cnf.loop = args.loop_input or cnf.loop
-    cnf.stabilizer = args.image_stabilizer or cnf.stabilizer
+    cnf.stb_inp = args.input_stabilizer or cnf.stb_inp
+    cnf.stb_out = args.output_stabilizer or cnf.stb_out
     cnf.flip_x = args.flip_x or cnf.flip_x
     cnf.flip_y = args.flip_y or cnf.flip_y
     if cnf.equ_inp >= 3:
@@ -362,6 +367,8 @@ if __name__ == '__main__':
     inp = imageinput.grab_frame()
     inp_old = inp.copy()
     inp_raw = inp.copy()
+    dsp_old = inp.copy()
+    dsp_raw = inp.copy()
 
     # main video processing loop
     while True:
@@ -374,7 +381,7 @@ if __name__ == '__main__':
             inp = clahe.apply(inp)
         elif cnf.flt_inp != 0:
             inp = cv2.filter2D(inp, -1, cnf.flt_inp_kernel)
-        if cnf.stabilizer:
+        if cnf.stb_inp:
             transform = cv2.estimateRigidTransform(inp_old, inp, False)
             if transform is not None:
                 inp = cv2.warpAffine(inp, transform, (cnf.video_width, cnf.video_height), inp_raw, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
@@ -388,6 +395,11 @@ if __name__ == '__main__':
             dsp = imagestack.getDIFF()
         elif cnf.mode_prc == 3:
             dsp = imagestack.getCUMSUM()
+        if cnf.stb_out:
+            transform = cv2.estimateRigidTransform(dsp_old, dsp, False)
+            if transform is not None:
+                dsp = cv2.warpAffine(dsp, transform, (cnf.video_width, cnf.video_height), dsp_raw, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+        dsp_old = dsp
         if cnf.equ_out == 1:
             dsp = cv2.equalizeHist(dsp)
         elif cnf.equ_out == 2:
@@ -518,8 +530,10 @@ if __name__ == '__main__':
                 flt_out_name, cnf.out_kernel, cnf.flt_out_strength = kernels.get_kernel(cnf.flt_out)
             elif asckey == 104:  # h show help
                 show_help()
-            elif asckey == 105: # i toggle image stabilizer
-                cnf.stabilizer = not cnf.stabilizer
+            elif asckey == 105: # i toggle input image stabilizer
+                cnf.stb_inp = not cnf.stb_inp
+            elif asckey == 73: # I toggle output image stabilizer
+                cnf.stb_out = not cnf.stb_out
             elif asckey == 108: # l toggle input video loop mode
                 cnf.loop = not cnf.loop
             elif asckey == 109:  # m input mode
