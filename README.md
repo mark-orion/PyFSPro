@@ -15,14 +15,16 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * Input and Output processing chains with basic image enhancement functions.
 * Vectorscope for the visualization of small changes in video stream.
 * Built-in pattern generator for Schlieren Videography.
-* Parameters can be set through command line options.
+* Parameters can be set through command line options and configuration files.
 * Most Parameters can be changed on the fly via keyboard shortcuts.
 * framestacker.py library can be re-used in other projects. It does not depend on OpenCV and only requires Numpy.
 
 ## Image enhancement and analysis functions
 * Image integration (rolling average)
-* Image difference to fixed reference (dark) frame or rolling average
-* Cumulative deviation of stacked images
+* Image difference to fixed reference (dark) frame or rolling average.
+* Cumulative deviation of stacked images.
+* Convolution filters with customizable kernels.
+* Image stabilizer (experimental)
 * Automatic or manual gain and offset
 * Histogram Equalization
 * Contrast Limited Adaptive Histogram Equalization (CLAHE)
@@ -42,7 +44,23 @@ sudo pip install sk-video
 ## Usage
 Installation: Clone or download PyFSPro  
 Run the program: python PyFSPro.py  
-Press the 'h' key for a list of keyboard shortcuts in the terminal window.  
+Press the 'h' key for a list of keyboard shortcuts in the terminal window.
+
+## Working with different configurations
+Pressing 's' saves the current configuration to a config file in this format:  
+SavedSettings-[DATE-TIME].conf  
+Pressing 'S' reloads the last saved configuration or 'default.conf' if this file exists and no configuration was saved before.
+python PyFSPro.py -c CONFIGFILE loads configuration CONFIGFILE. Settings defined by additional command line arguments  
+will be used instead of the settings defined in the configuration file.
+
+## Files and Folders in the build directory
+* PyFSPro.py - the main program.
+* framestacker.py frame stacker module for the main processing operation.
+* filters.py contains the convolution kernels used in the input and output filters. Custom kernels can be added to this file!
+* videosource.py manages video input from camera, videofile or image sequence.
+* output - default directory to store images, videos and screenshots.
+* settings - some example configurations.
+* doc - various documents: Dataflow graph, schlieren background patterns etc.
 
 ## Important command line arguments and parameters
 Run 'python PyFSPro.py --help' for a full list of command line options.  
@@ -73,6 +91,8 @@ lower/UPPER case = apply to input/OUTPUT processing chain.
 * q    Terminate Program
 * r    Reset Cumulative Summing
 * R    Reset Gains and Offsets
+* s    Save configuration
+* S    Load saved configuration
 * v    Toggle video recording
 * V    Toggle image sequence recording
 * ?    Cycle Schlieren pattern types
