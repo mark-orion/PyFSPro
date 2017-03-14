@@ -307,6 +307,8 @@ if __name__ == '__main__':
     if args.output_video != 'none':
         cnf.recordv = True
         cnf.video_dst = args.output_video
+        video = VideoWriter(cnf.video_dst + gettime() + '.avi')
+        cnf.novfile = False
     if args.output_images != 'none':
         cnf.recordi = True
         cnf.image_dst = args.output_images
@@ -474,9 +476,6 @@ if __name__ == '__main__':
         
         # record video or image sequence
         if cnf.recordv:
-            if cnf.novfile:
-                video = VideoWriter(cnf.video_dst + gettime() + '.avi')
-                cnf.novfile = False
             video.writeFrame(out)
         if cnf.recordi:
             if cnf.imgindx == 0:
@@ -568,6 +567,12 @@ if __name__ == '__main__':
                 cnf.read_config(cnf.cfgfilename)
             elif asckey == 118: # v toggle video recording
                 cnf.recordv = not cnf.recordv
+                if cnf.recordv:
+                    if cnf.novfile:
+                        video = VideoWriter(cnf.video_dst + gettime() + '.avi')
+                        cnf.novfile = False
+                else:
+                    cnf.novfile = True
             elif asckey == 86: # V toggle image sequence recording
                 cnf.recordi = not cnf.recordi
             elif asckey == 63:  # ? cycle schlieren pattern type
