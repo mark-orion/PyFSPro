@@ -55,9 +55,11 @@ will be used instead of the settings defined in the configuration file.
 
 ## Files and Folders in the build directory
 * PyFSPro.py - the main program.
-* framestacker.py frame stacker module for the main processing operation.
-* filters.py contains the convolution kernels used in the input and output filters. Custom kernels can be added to this file!
-* videosource.py manages video input from camera, videofile or image sequence.
+* framestacker.py - frame stacker module for the main processing operation.
+* filters.py - contains the convolution kernels used in the input and output filters. Custom kernels can be added to this file!
+* videosource.py - manages video input from camera, videofile or image sequence.
+* videosource_pi.py - video input for Raspberry Pi camera module.
+* config.py - default configuration and config load / save functionality.
 * output - default directory to store images, videos and screenshots.
 * settings - some example configurations.
 * doc - various documents: Dataflow graph, schlieren background patterns etc.
