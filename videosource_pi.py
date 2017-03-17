@@ -26,6 +26,7 @@ class FrameInput():
         self.frame_height = self.input_height
         self.thread = None
         self.video_frame = None
+        self.exit_thread = False
         if self.thread is None:
             # start background frame thread
             self.thread = threading.Thread(target=self.framegrabber_thread)
@@ -53,6 +54,8 @@ class FrameInput():
                 # reset stream for next frame
                 self.stream.seek(0)
                 self.stream.truncate()
+                if self.exit_thread:
+                    break
 
     def grab_frame(self):
         self.gray_frame = cv2.cvtColor(self.video_frame, cv2.COLOR_BGR2GRAY)

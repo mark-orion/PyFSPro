@@ -11,7 +11,11 @@ import cv2.cv as cv
 
 # local imports
 import config
+
+# choose between generic and Raspberry Pi camera support
 import videosource as vs
+#import videosource_pi as vs
+
 import framestacker as fs
 import filters as flt
 
@@ -24,6 +28,7 @@ def nothing(par):
     return
 
 def signal_handler(signal, frame):
+    imageinput.exit_thread = True
     sys.exit(0)
     
 def gettime():

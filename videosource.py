@@ -16,6 +16,7 @@ import cv2.cv as cv
 class FrameInput():
     def __init__(self, video_src, input_width, input_height):
         self.loop = False
+        self.exit_thread = False # needed for compatibility with videosource_pi.py
         self.video_src = video_src
         self.input_width = input_width
         self.input_height = input_height
