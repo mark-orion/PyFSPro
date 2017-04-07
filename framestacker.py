@@ -53,9 +53,11 @@ class FrameStack:
         self.kernel_value = float(1 / kernel_size)
         self.kernel = [self.kernel_value for self.i in range(self.kernel_size)]
         
-
     def addFrame(self, frame):
-        self.raw_inp = np.float32(frame)
+        self.addFloatFrame(np.float32(frame))
+    
+    def addFloatFrame(self, frame):
+        self.raw_inp = frame
         if self.flip_x:
             self.raw_inp = np.flipud(self.raw_inp)
         if self.flip_y:
