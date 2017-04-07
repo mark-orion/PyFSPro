@@ -372,6 +372,7 @@ if __name__ == '__main__':
     
     # prepare image stabilizer
     inp = imageinput.grab_frame()
+    inp = cv2.cvtColor(inp, cv2.COLOR_BGR2GRAY)
     inp_old = inp.copy()
     inp_raw = inp.copy()
     dsp_old = inp.copy()
@@ -380,6 +381,7 @@ if __name__ == '__main__':
     # main video processing loop
     while True:
         inp = imageinput.grab_frame()
+        inp = cv2.cvtColor(inp, cv2.COLOR_BGR2GRAY)
         if cnf.dnz_inp:
             cv2.fastNlMeansDenoising(inp, inp, cnf.dnz_inp_str, 7, 21)
         if cnf.equ_inp == 1:

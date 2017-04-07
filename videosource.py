@@ -43,8 +43,7 @@ class FrameInput():
                 self.ret, self.video_frame = self.cam.read()
             else:
                 self.error_handler()
-        self.gray_frame = cv2.cvtColor(self.video_frame, cv2.COLOR_BGR2GRAY)
-        return self.gray_frame
+        return self.video_frame
 
     def error_handler(self):
         print("No more frames or capture device down - exiting.",
