@@ -473,6 +473,8 @@ if __name__ == '__main__':
             out = cv2.cvtColor(dsp, cv2.COLOR_GRAY2BGR)
         if cnf.mode_out >= 1:
             x_avg, y_avg = imagestack.getVECTOR(cnf.vec_zoom)
+            x_avg = int(x_avg)
+            y_avg = int(y_avg)
             cv2.line(out, center, (x_avg, y_avg), cnf.green,
                      thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
             cv2.circle(out, (x_avg, y_avg), 20, cnf.red,

@@ -115,10 +115,8 @@ class FrameStack:
                                                   0:self.width])
         self.lower_avg = np.nanmean(self.proc_out[self.center_y:self.height,
                                                   0:self.width])
-        self.x_avg = int((self.right_avg - self.left_avg) * self.vec_zoom *
-                         self.width + self.center_x)
-        self.y_avg = int((self.lower_avg - self.upper_avg) * self.vec_zoom *
-                         self.height + self.center_y)
+        self.x_avg = (self.right_avg - self.left_avg) * self.vec_zoom * self.width + self.center_x
+        self.y_avg = (self.lower_avg - self.upper_avg) * self.vec_zoom * self.height + self.center_y
         return self.x_avg, self.y_avg
 
     def resetCUMSUM(self):
