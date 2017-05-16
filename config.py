@@ -71,6 +71,11 @@ class Settings:
         self.loop = False
         self.stb_inp = False
         self.stb_out = False
+        self.osd_txtline = 2
+        self.green = (0, 255, 0)
+        self.red = (0, 0, 255)
+        self.blue = (255, 0, 0)
+        self.black = (0, 0, 0)
         self.colormaps = [
                 'AUTUMN', 'BONE', 'JET', 'WINTER',
                 'RAINBOW', 'OCEAN', 'SUMMER', 'SPRING',
