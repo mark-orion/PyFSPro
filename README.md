@@ -1,4 +1,5 @@
 # PyFSPro - Python Frame Sequence Processor
+## updated version with Kivy graphical user interface.
 Multi purpose realtime frame sequence and video processor for a wide range of applications including:
 * [Schlieren Videography](https://hackaday.io/project/9034-schlieren-videography) using the Moiré-effect.
 * Realtime Astronomical video processing for live presentations.
@@ -42,7 +43,8 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 On Debian / Ubuntu based systems the requirements can be installed with the following commands:  
 sudo apt-get install python-numpy python-opencv  
-sudo pip install sk-video
+sudo pip install sk-video  
+
 Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions
 
 ## Usage
