@@ -6,39 +6,29 @@ Created on Fri Mar 10 10:00:42 2017
 @author: Mark Dammer
 """
 
-import ConfigParser
 import os.path
+import time
+from kivy.config import ConfigParser
 
 class Settings:
     def __init__(self):
-        self.Config = ConfigParser.ConfigParser()
+        self.Config = ConfigParser()
         self.Config.add_section('Input')
         self.Config.add_section('Processor')
         self.Config.add_section('Output')
-        self.Config.add_section('Display')
-        self.Config.add_section('Pattern_Generator')
-        self.Config.add_section('Misc')
         # default values
         self.cfgfilename = 'default.conf'
+        self.helpfile = 'doc/PyFSPro_dataflow.jpg'
         self.numframes = 255  # No. of frames in stack
         self.color_mode = -1  # Greyscale output
         self.video_src = 0  # Default camera
         self.video_width = 1024
         self.video_height = 768
-        self.window_x = 100  # Position of first window on screen
-        self.window_y = 100
-        self.window_space = 50  # Space between windows
-        self.window_width = 800 # Default window size
-        self.window_height = 600
-        
-        # default values for pattern generator
-        self.screen_width = 1920
-        self.screen_height = 1080
-        self.pattern_size = 0
-        self.pattern_mode = 2
-        self.pattern = None
-        self.backgnd = False
-        
+        self.show_inp = True
+        self.show_out = True
+        self.show_vec = False
+        self.show_help = False
+
         # settings for video and image sequence recording
         self.recordi = False
         self.recordv = False
@@ -47,7 +37,7 @@ class Settings:
         self.output_path = './output/'
         self.image_dst = self.output_path
         self.video_dst = self.output_path
-        
+
         # switches for image filters and tools
         self.blr_inp = False
         self.blr_out = False
@@ -62,88 +52,85 @@ class Settings:
         self.flt_out = 0
         self.flt_inp_strength = 0
         self.flt_out_strength = 0
-        self.flt_strength_increment = 0.1
         self.flt_inp_kernel = None
         self.flt_out_kernel = None
         self.flip_x = False
         self.flip_y = False
         self.inp_kernel = None
         self.out_kernel = None
-        self.mode_in = 0
+        #self.mode_in = 0
         self.mode_prc = 0
-        self.mode_out = 0
+        #self.mode_out = 0
         self.pseudoc = False
         self.dyn_dark = True
         self.gain_inp = 1.0
         self.gain_out = 1.0
-        self.gain_increment = 0.2
         self.offset_inp = 0
         self.offset_out = 0
         self.vec_zoom = 0.1
         self.loop = False
         self.stb_inp = False
         self.stb_out = False
-        
-        # presets for text in OSD
-        self.green = (0, 255, 0)
-        self.red = (0, 0, 255)
-        self.blue = (255, 0, 0)
-        self.black = (0, 0, 0)
-        self.osd_inp = 'Input:'
-        self.osd_out = 'Output:'
-        self.osd_col = 'Color: '
-        self.osd_mode = 'Proc: '
-        self.osd_recording = ''
-        self.osd_txtsize = 1.5
-        self.osd_txtline = 2
         self.colormaps = [
                 'AUTUMN', 'BONE', 'JET', 'WINTER',
                 'RAINBOW', 'OCEAN', 'SUMMER', 'SPRING',
                 'COOL', 'HSV', 'PINK', 'HOT'
                 ]
-        
-        # help text array
-        self.helptxt = [
-                'KEYBOARD SHORTCUTS',
-                'lower/UPPER case = apply to input/OUTPUT processing chain.',
-                'a/A  Auto adjust offset and gain',
-                'b/B  Blur',
-                'c    Cycle Color Palette',
-                'd    Toggle Dark Frame mode (Rolling Average / Fixed)',
-                'e/E  Cycle Equalizer modes (OFF, HIST, CLAHE)',
-                'f/F  Cycle Filters defined in filters.py',
-                'h    Show this help text',
-                'i/I  Toggle image stabilizer',
-                'l    Toggle input video loop mode',
-                'm    Cycle Input Mode (BOTH, STATUS, IMAGE)',
-                'M    Cycle Output Mode (IMAGE, VECTOR, BOTH)',
-                'n/N  Denoise',
-                'p    Cycle Processing Mode (OFF, AVG, DIFF, CUMSUM)',
-                'q    Terminate Program',
-                'r    Reset Cumulative Summing',
-                'R    Reset Gains and Offsets',
-                's    Save configuration',
-                'S    Load saved configuration',
-                'v    Toggle video recording',
-                'V    Toggle image sequence recording',
-                '?    Cycle Schlieren pattern types',
-                '>    Increase Schlieren pattern size',
-                '<    Decrease Schlieren pattern size',
-                'x    Flip image around X axis',
-                'y    Flip image around Y axis',
-                '[/]  Decrease / Increase Input Gain',
-                '{/}  Decrease / Increase Output Gain',
-                '-/+  Decrease / Increase Input Filter Strength',
-                '_/=  Decrease / Increase Output Filter Strength',
-                'SPACE create Screenshot',
-                '1-9  Set No. of frames in Stack',
-                ]
+        self.set_defaults()
+
+    def gettime(self):
+        self.timestring = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+        return self.timestring
+
+    def set_defaults(self):
+        # Section 'Input'
+        self.Config.setdefault('Input','video_src', self.video_src)
+        self.Config.setdefault('Input','video_width', self.video_width)
+        self.Config.setdefault('Input','video_height', self.video_height)
+        self.Config.setdefault('Input','loop', self.loop)
+        self.Config.setdefault('Input','flip_x', self.flip_x)
+        self.Config.setdefault('Input','flip_y', self.flip_y)
+        self.Config.setdefault('Input','blr_inp', self.blr_inp)
+        self.Config.setdefault('Input','equ_inp', self.equ_inp)
+        self.Config.setdefault('Input','dnz_inp', self.dnz_inp)
+        self.Config.setdefault('Input','dnz_inp_str', self.dnz_inp_str)
+        self.Config.setdefault('Input','flt_inp', self.flt_inp)
+        self.Config.setdefault('Input','flt_inp_strength', self.flt_inp_strength)
+        #self.Config.setdefault('Input','mode_in', self.mode_in)
+        self.Config.setdefault('Input','gain_inp', self.gain_inp)
+        self.Config.setdefault('Input','offset_inp', self.offset_inp)
+        self.Config.setdefault('Input','stb_inp', self.stb_inp)
+
+        # Section 'Processor'
+        self.Config.setdefault('Processor','mode_prc', self.mode_prc)
+        self.Config.setdefault('Processor','dyn_dark', self.dyn_dark)
+        self.Config.setdefault('Processor','blr_strength', self.blr_strength)
+        self.Config.setdefault('Processor','numframes', self.numframes)
+
+        # Section 'Output'
+        self.Config.setdefault('Output','video_dst', self.video_dst)
+        self.Config.setdefault('Output','image_dst', self.image_dst)
+        self.Config.setdefault('Output','recordv', self.recordv)
+        self.Config.setdefault('Output','recordi', self.recordi)
+        self.Config.setdefault('Output','blr_out', self.blr_out)
+        self.Config.setdefault('Output','equ_out', self.equ_out)
+        self.Config.setdefault('Output','dnz_out', self.dnz_out)
+        self.Config.setdefault('Output','dnz_out_str', self.dnz_out_str)
+        self.Config.setdefault('Output','flt_out', self.flt_out)
+        self.Config.setdefault('Output','flt_out_strength', self.flt_out_strength)
+        #self.Config.setdefault('Output','mode_out', self.mode_out)
+        self.Config.setdefault('Output','gain_out', self.gain_out)
+        self.Config.setdefault('Output','offset_out', self.offset_out)
+        self.Config.setdefault('Output','color_mode', self.color_mode)
+        self.Config.setdefault('Output','pseudoc', self.pseudoc)
+        self.Config.setdefault('Output','vec_zoom', self.vec_zoom)
+        self.Config.setdefault('Output','stb_out', self.stb_out)
 
     def write_config(self, filename):
         if filename is None:
             filename = self.cfgfilename
         self.cfgfile = open(filename,'w')
-        
+
         # Section 'Input'
         self.Config.set('Input','video_src', self.video_src)
         self.Config.set('Input','video_width', self.video_width)
@@ -157,17 +144,17 @@ class Settings:
         self.Config.set('Input','dnz_inp_str', self.dnz_inp_str)
         self.Config.set('Input','flt_inp', self.flt_inp)
         self.Config.set('Input','flt_inp_strength', self.flt_inp_strength)
-        self.Config.set('Input','mode_in', self.mode_in)
+        #self.Config.set('Input','mode_in', self.mode_in)
         self.Config.set('Input','gain_inp', self.gain_inp)
         self.Config.set('Input','offset_inp', self.offset_inp)
         self.Config.set('Input','stb_inp', self.stb_inp)
-        
+
         # Section 'Processor'
         self.Config.set('Processor','mode_prc', self.mode_prc)
         self.Config.set('Processor','dyn_dark', self.dyn_dark)
         self.Config.set('Processor','blr_strength', self.blr_strength)
         self.Config.set('Processor','numframes', self.numframes)
-        
+
         # Section 'Output'
         self.Config.set('Output','video_dst', self.video_dst)
         self.Config.set('Output','image_dst', self.image_dst)
@@ -179,34 +166,17 @@ class Settings:
         self.Config.set('Output','dnz_out_str', self.dnz_out_str)
         self.Config.set('Output','flt_out', self.flt_out)
         self.Config.set('Output','flt_out_strength', self.flt_out_strength)
-        self.Config.set('Output','mode_out', self.mode_out)
+        #self.Config.set('Output','mode_out', self.mode_out)
         self.Config.set('Output','gain_out', self.gain_out)
         self.Config.set('Output','offset_out', self.offset_out)
         self.Config.set('Output','color_mode', self.color_mode)
         self.Config.set('Output','pseudoc', self.pseudoc)
         self.Config.set('Output','vec_zoom', self.vec_zoom)
         self.Config.set('Output','stb_out', self.stb_out)
-        
-        # Section 'Display'
-        self.Config.set('Display','window_x', self.window_x)
-        self.Config.set('Display','window_y', self.window_y)
-        self.Config.set('Display','window_width', self.window_width)
-        self.Config.set('Display','window_height', self.window_height)
-        self.Config.set('Display','window_space', self.window_space)
-        
-        # Section 'Pattern_Generator'
-        self.Config.set('Pattern_Generator','screen_width', self.screen_width)
-        self.Config.set('Pattern_Generator','screen_height', self.screen_height)
-        self.Config.set('Pattern_Generator','pattern_mode', self.pattern_mode)
-        self.Config.set('Pattern_Generator','pattern_size', self.pattern_size)
-        self.Config.set('Pattern_Generator','backgnd', self.backgnd)
-        
-        # Section 'Misc'
-        self.Config.set('Misc','flt_strength_increment', self.flt_strength_increment)
-        self.Config.set('Misc','gain_increment', self.gain_increment)
+
         self.Config.write(self.cfgfile)
         self.cfgfile.close()
-        
+
     def read_config(self, filename):
         if os.path.isfile(filename):
             self.Config.read(filename)
@@ -222,7 +192,6 @@ class Settings:
             self.dnz_inp_str = float(self.Config.get('Input','dnz_inp_str'))
             self.flt_inp = int(self.Config.get('Input','flt_inp'))
             self.flt_inp_strength = float(self.Config.get('Input','flt_inp_strength'))
-            self.mode_in = int(self.Config.get('Input','mode_in'))
             self.gain_inp = float(self.Config.get('Input','gain_inp'))
             self.offset_inp = float(self.Config.get('Input','offset_inp'))
             self.stb_inp = self.Config.getboolean('Input','stb_inp')
@@ -240,24 +209,11 @@ class Settings:
             self.dnz_out_str = float(self.Config.get('Output','dnz_out_str'))
             self.flt_out = int(self.Config.get('Output','flt_out'))
             self.flt_out_strength = float(self.Config.get('Output','flt_out_strength'))
-            self.mode_out = int(self.Config.get('Output','mode_out'))
             self.gain_out = float(self.Config.get('Output','gain_out'))
             self.offset_out = float(self.Config.get('Output','offset_out'))
             self.color_mode = int(self.Config.get('Output','color_mode'))
             self.pseudoc = self.Config.getboolean('Output','pseudoc')
             self.vec_zoom = float(self.Config.get('Output','vec_zoom'))
             self.stb_out = self.Config.getboolean('Output','stb_out')
-            self.window_x = int(self.Config.get('Display','window_x'))
-            self.window_y = int(self.Config.get('Display','window_y'))
-            self.window_width = int(self.Config.get('Display','window_width'))
-            self.window_height = int(self.Config.get('Display','window_height'))
-            self.window_space = int(self.Config.get('Display','window_space'))
-            self.screen_width = int(self.Config.get('Pattern_Generator','screen_width'))
-            self.screen_height = int(self.Config.get('Pattern_Generator','screen_height'))
-            self.pattern_mode = int(self.Config.get('Pattern_Generator','pattern_mode'))
-            self.pattern_size = int(self.Config.get('Pattern_Generator','pattern_size'))
-            self.backgnd = self.Config.getboolean('Pattern_Generator','backgnd')
-            self.flt_strength_increment = float(self.Config.get('Misc','flt_strength_increment'))
-            self.gain_increment = float(self.Config.get('Misc','gain_increment'))
         else:
             print('File ' + str(filename) + ' does not exist.')

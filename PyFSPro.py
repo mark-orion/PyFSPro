@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 from __future__ import division, print_function
 import sys
-import signal
 import time
 import argparse
 
 import numpy as np
 import cv2
 import cv2.cv as cv
+
+# kivy imports
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.clock import Clock
+from kivy.graphics.texture import Texture
+from kivy.properties import ObjectProperty
+from kivy.animation import Animation
 
 # local imports
 import config
@@ -19,611 +26,630 @@ import videosource as vs
 import framestacker as fs
 import filters as flt
 
-#scikit-video (scikit-video.org) is used for recording because of OpenCV Linux bug
+# scikit-video (scikit-video.org) is used for recording because of OpenCV
+# Linux bug
 from skvideo.io import FFmpegWriter as VideoWriter
 
-cnf = config.Settings()
 
-def nothing(par):
-    return
+class MyScreen(BoxLayout):
+    iimage_wid = ObjectProperty()
+    oimage_wid = ObjectProperty()
+    select_wid = ObjectProperty()
+    osd_wid = ObjectProperty()
+    vec_wid = ObjectProperty()
+    ipan_wid = ObjectProperty()
+    opan_wid = ObjectProperty()
+    mid_wid = ObjectProperty()
+    inp_wid = ObjectProperty()
+    out_wid = ObjectProperty()
+    inpb_wid = ObjectProperty()
+    outb_wid = ObjectProperty()
+    bpan_wid = ObjectProperty()
+    tpan_wid = ObjectProperty()
+    iauto_wid = ObjectProperty()
+    igain_wid = ObjectProperty()
+    ioffset_wid = ObjectProperty()
+    oauto_wid = ObjectProperty()
+    ogain_wid = ObjectProperty()
+    ooffset_wid = ObjectProperty()
+    iblur_wid = ObjectProperty()
+    idnz_wid = ObjectProperty()
+    oblur_wid = ObjectProperty()
+    odnz_wid = ObjectProperty()
+    istab_wid = ObjectProperty()
+    ostab_wid = ObjectProperty()
+    iequ_wid = ObjectProperty()
+    oequ_wid = ObjectProperty()
+    iflt_wid = ObjectProperty()
+    oflt_wid = ObjectProperty()
+    proc_wid = ObjectProperty()
+    dark_wid = ObjectProperty()
+    stack_wid = ObjectProperty()
+    reset_wid = ObjectProperty()
+    stackdisplay_wid = ObjectProperty()
+    play_wid = ObjectProperty()
+    loop_wid = ObjectProperty()
+    screenshot_wid = ObjectProperty()
+    video_wid = ObjectProperty()
+    imagesequence_wid = ObjectProperty()
+    help_wid = ObjectProperty()
+    helpbox_wid = ObjectProperty()
+    colors_wid = ObjectProperty()
+    flipx_wid = ObjectProperty()
+    flipy_wid = ObjectProperty()
 
-def signal_handler(signal, frame):
-    imageinput.exit_thread = True
-    sys.exit(0)
-    
-def gettime():
-    timestring = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
-    return timestring
 
-def set_osd():
-    cnf.osd_inp = 'Input: Gain:' + "{:3.2f}".format(cnf.gain_inp)
-    cnf.osd_out = 'Output: Gain:' + "{:3.2f}".format(cnf.gain_out)
-    cnf.osd_col = ('Size: ' + str(cnf.video_width) + 'x' +
-               str(cnf.video_height) + ' Color: ')
-    cnf.osd_mode = 'Proc:'
-    if cnf.stb_inp:
-        cnf.osd_inp += ' Stabilizer'
-    if cnf.equ_inp == 0:
-        cnf.osd_inp += ' Equ:OFF'
-    elif cnf.equ_inp == 1:
-        cnf.osd_inp += ' Equ:Hist'
-    elif cnf.equ_inp == 2:
-        cnf.osd_inp += ' Equ:CLAHE'
-    if cnf.stb_out:
-        cnf.osd_out += ' Stabilizer'
-    if cnf.equ_out == 0:
-        cnf.osd_out += ' Equ:OFF'
-    elif cnf.equ_out == 1:
-        cnf.osd_out += ' Equ:Hist'
-    elif cnf.equ_out == 2:
-        cnf.osd_out += ' Equ:CLAHE'
-    if imagestack.blr_inp:
-        cnf.osd_inp += ' Blur:' + str(imagestack.kernel_size)
-    if imagestack.blr_out:
-        cnf.osd_out += ' Blur:' + str(imagestack.kernel_size)
-    if cnf.dnz_inp:
-        cnf.osd_inp += ' Dnz:' + str(cnf.dnz_inp_str)
-    if cnf.dnz_out:
-        cnf.osd_out += ' Dnz:' + str(cnf.dnz_out_str)
-    if cnf.flt_inp > 0:
-         cnf.osd_inp += ' Flt: ' + str(flt_inp_name) + ' ' +  "{:3.2f}".format(cnf.flt_inp_strength)
-    if cnf.flt_out > 0:
-         cnf.osd_out += ' Flt: ' + str(flt_out_name) + ' ' +  "{:3.2f}".format(cnf.flt_out_strength)
-    if imageinput.loop:
-        cnf.osd_inp += ' LOOPING'
-    if cnf.pseudoc is False:
-        cnf.osd_col += 'Grey'
-    else:
-        cnf.osd_col += cnf.colormaps[cnf.color_mode] + '(' + str(cnf.color_mode) + ')'
-    if cnf.mode_prc == 0:
-        cnf.osd_mode += 'OFF'
-    elif cnf.mode_prc == 1:
-        cnf.osd_mode += 'AVG'
-    elif cnf.mode_prc == 2:
-        cnf.osd_mode += 'DIFF'
-    elif cnf.mode_prc == 3:
-        cnf.osd_mode += 'CUMSUM'
-    if cnf.flip_x:
-        cnf.osd_mode += ' Flip_X'
-    if cnf.flip_y:
-        cnf.osd_mode += ' Flip_Y'
-    if cnf.dyn_dark:
-        cnf.osd_mode += ' DarkF:AVG'
-    else:
-        cnf.osd_mode += ' DarkF:Fix'
-    cnf.osd_mode += ' Stack:' + str(cnf.numframes)
-    if cnf.recordv:
-        cnf.osd_recording = 'Rec: Video'
-    if cnf.recordi:
-        if cnf.recordv:
-            cnf.osd_recording += ' + Image Sequence'
+class PyFSProApp(App):
+
+    def apply_settings(self):
+        self.cnf.imagestack.blr_inp = self.cnf.blr_inp
+        self.cnf.imagestack.blr_out = self.cnf.blr_out
+        self.cnf.imagestack.flip_x = self.cnf.flip_x
+        self.cnf.imagestack.flip_y = self.cnf.flip_y
+        self.cnf.imagestack.gain_inp = self.cnf.gain_inp
+        self.cnf.imagestack.gain_out = self.cnf.gain_out
+        self.cnf.imagestack.offset_inp = self.cnf.offset_inp
+        self.cnf.imagestack.offset_out = self.cnf.offset_out
+        self.cnf.imagestack.setKernel(self.cnf.blr_strength)
+        self.cnf.imagestack.dyn_dark = self.cnf.dyn_dark
+        self.cnf.flt_inp_kernel = self.cnf.inp_kernel * self.cnf.flt_inp_strength
+        self.cnf.flt_out_kernel = self.cnf.out_kernel * self.cnf.flt_out_strength
+        self.imageinput.loop = self.cnf.loop
+        if (self.cnf.imagestack.stackrange != self.cnf.numframes):
+            self.cnf.imagestack.initStack(self.cnf.numframes)
+
+    def update_controls(self, values):
+        if values.input_denoise:
+            self.cnf.rootwidget.idnz_wid.state = 'down'
+        if values.output_denoise:
+            self.cnf.rootwidget.odnz_wid.state = 'down'
+        if values.input_equalize != self.cnf.rootwidget.iequ_wid.text:
+            self.cnf.rootwidget.iequ_wid.text = values.input_equalize
+        if values.output_equalize != self.cnf.rootwidget.oequ_wid.text:
+            self.cnf.rootwidget.oequ_wid.text = values.output_equalize
+        if values.processing_mode != self.cnf.rootwidget.proc_wid.text:
+            self.cnf.rootwidget.proc_wid.text = values.processing_mode
+        if float(values.input_gain) != float(self.cnf.rootwidget.igain_wid.value):
+            self.cnf.rootwidget.igain_wid.value = float(values.input_gain)
+        if float(values.output_gain) != float(self.cnf.rootwidget.ogain_wid.value):
+            self.cnf.rootwidget.ogain_wid.value = float(values.output_gain)
+        if values.input_blur:
+            self.cnf.rootwidget.iblur_wid.state = 'down'
+        if values.output_blur:
+            self.cnf.rootwidget.oblur_wid.state = 'down'
+        if values.input_filter != self.cnf.rootwidget.iflt_wid.text:
+            self.cnf.rootwidget.iflt_wid.text = values.input_filter
+        if values.output_filter != self.cnf.rootwidget.oflt_wid.text:
+            self.cnf.rootwidget.oflt_wid.text = values.output_filter
+        if values.loop_input:
+            self.cnf.rootwidget.loop_wid.state = 'down'
+        if values.input_stabilizer:
+            self.cnf.rootwidget.istab_wid.state = 'down'
+        if values.output_stabilizer:
+            self.cnf.rootwidget.ostab_wid.state = 'down'
+        if values.flip_x:
+            self.cnf.rootwidget.flipx_wid.state = 'down'
+        if values.flip_y:
+            self.cnf.rootwidget.flipy_wid.state = 'down'
+        if int(values.stack_size) != int(self.cnf.rootwidget.stack_wid.value):
+            self.cnf.rootwidget.stack_wid.value = int(values.stack_size)
+        if values.color_mode != self.cnf.rootwidget.colors_wid.text:
+            self.cnf.rootwidget.colors_wid.text = values.color_mode
+        if values.output_video != 'none':
+            self.cnf.video_dst = values.output_video
+            self.cnf.rootwidget.video_wid.state = 'down'
+        if values.output_images != 'none':
+            self.cnf.image_dst = values.output_images
+            self.cnf.rootwidget.imagesequence_wid.state = 'down'
+
+    def osd_callback(self, instance, value):
+        if value == 'normal':
+            # Hide the control panels by moving them out of the window
+            self.ibar_out.start(self.cnf.rootwidget.ipan_wid)
+            self.obar_out.start(self.cnf.rootwidget.opan_wid)
+            self.outb_large.start(self.cnf.rootwidget.outb_wid)
+            self.inpb_large.start(self.cnf.rootwidget.inpb_wid)
+            self.bpan_out.start(self.cnf.rootwidget.bpan_wid)
+            self.tpan_out.start(self.cnf.rootwidget.tpan_wid)
+            self.cnf.rootwidget.helpbox_wid.size_hint_y = 1
         else:
-            cnf.osd_recording = 'Rec: Image Sequence'
+            # Get the control panels back in place
+            self.ibar_in.start(self.cnf.rootwidget.ipan_wid)
+            self.obar_in.start(self.cnf.rootwidget.opan_wid)
+            self.outb_small.start(self.cnf.rootwidget.outb_wid)
+            self.inpb_small.start(self.cnf.rootwidget.inpb_wid)
+            self.bpan_in.start(self.cnf.rootwidget.bpan_wid)
+            self.tpan_in.start(self.cnf.rootwidget.tpan_wid)
+            self.cnf.rootwidget.helpbox_wid.size_hint_y = 0.9
 
-
-def show_help():
-    print('', file=sys.stderr)
-    for h in cnf.helptxt:
-        print(h, file=sys.stderr)
-    print('', file=sys.stderr)
-
-
-def draw_pattern():
-    if cnf.pattern_size <= 0:
-        cnf.pattern_size = 0
-    if cnf.pattern_size == 0 and cnf.backgnd:
-        cv2.destroyWindow('Schlieren Background')
-        cnf.backgnd = False
-    tmp_img = np.zeros((cnf.screen_height,cnf.screen_width,3), np.uint8)
-    if cnf.pattern_size >= 1:
-        if not cnf.backgnd:
-            cv2.namedWindow('Schlieren Background', 0)
-            cnf.backgnd = True
-        if (cnf.pattern_mode == 3):
-            for j in range(0,cnf.screen_width,2*cnf.pattern_size):
-                cv2.rectangle(tmp_img,(j,0),(j+cnf.pattern_size,cnf.screen_height),(255,255,255),cv.CV_FILLED)
+    def vec_callback(self, instance, value):
+        if value == 'normal':
+            self.cnf.show_vec = False
         else:
-            for j in range(0,cnf.screen_height,2*cnf.pattern_size):
-                if (cnf.pattern_mode == 1):
-                    for i in range(0,cnf.screen_width,2*cnf.pattern_size):
-                        cv2.rectangle(tmp_img,(i,j),(i+cnf.pattern_size,j+cnf.pattern_size),(255,255,255),cv.CV_FILLED)
-                        cv2.rectangle(tmp_img,(i+cnf.pattern_size,j+cnf.pattern_size),(i+2*cnf.pattern_size,j+2*cnf.pattern_size),(255,255,255),cv.CV_FILLED)
-                if (cnf.pattern_mode == 2):
-                        cv2.rectangle(tmp_img,(0,j),(cnf.screen_width,j+cnf.pattern_size),(255,255,255),cv.CV_FILLED)
-        cv2.putText(tmp_img, str(cnf.pattern_size), (12, 41), cv2.FONT_HERSHEY_PLAIN, 2.0, cnf.black, thickness=2, lineType=cv2.CV_AA)
-        cv2.putText(tmp_img, str(cnf.pattern_size), (10, 40), cv2.FONT_HERSHEY_PLAIN, 2.0, cnf.red, thickness=2, lineType=cv2.CV_AA)
-    return tmp_img
+            self.cnf.show_vec = True
 
-def apply_settings():
-    imagestack.blr_inp = cnf.blr_inp
-    imagestack.blr_out = cnf.blr_out
-    imagestack.flip_x = cnf.flip_x
-    imagestack.flip_y = cnf.flip_y
-    imagestack.gain_inp = cnf.gain_inp
-    imagestack.gain_out = cnf.gain_out
-    imagestack.offset_inp = cnf.offset_inp
-    imagestack.offset_out = cnf.offset_out
-    imagestack.setKernel(cnf.blr_strength)
-    imagestack.dyn_dark = cnf.dyn_dark
-    cnf.flt_inp_kernel = cnf.inp_kernel * cnf.flt_inp_strength
-    cnf.flt_out_kernel = cnf.out_kernel * cnf.flt_out_strength
-    imageinput.loop = cnf.loop
-    if (imagestack.stackrange != cnf.numframes):
-        imagestack.initStack(cnf.numframes)
-
-if __name__ == '__main__':
-
-    # register signal handler for a clean exit
-    signal.signal(signal.SIGINT, signal_handler)
-
-    # command line parser
-    parser = argparse.ArgumentParser(description='Python Frame Sequence Processor', add_help=False)
-    
-    # check if we load a config file
-    parser.add_argument('-c', '--config_file', default='none',
-                        help='Load Configuration from file')
-    options, args = parser.parse_known_args()
-    if options.config_file != 'none':
-        cnf.read_config(options.config_file)
-    
-    # then parse all other arguments
-    parser.add_argument('-h', '--help', action='store_true',
-                        help='Show Help')
-    parser.add_argument('-is', '--input_source', default=cnf.video_src,
-                        help='Input Source, filename or camera index')
-    parser.add_argument('-iw', '--input_width', default=cnf.video_width,
-                        help='Width of captured frames')
-    parser.add_argument('-ih', '--input_height', default=cnf.video_height,
-                        help='Height of captured frames')
-    parser.add_argument('-ib', '--input_blur', action='store_true',
-                        help='Blur Input')
-    parser.add_argument('-ie', '--input_equalize', default=cnf.equ_inp,
-                        help='Input Equalization Mode')
-    parser.add_argument('-if', '--input_filter', default=cnf.flt_inp,
-                        help='Set Input Filter')
-    parser.add_argument('-ifs', '--input_filter_strength', default='none',
-                        help='Set Input Filter Strength')
-    parser.add_argument('-ig', '--input_gain', default=cnf.gain_inp,
-                        help='Input Gain')
-    parser.add_argument('-il', '--loop_input', action='store_true',
-                        help='Loop input video')
-    parser.add_argument('-im', '--input_mode', default=cnf.mode_in,
-                        help='Display Mode Input Window')
-    parser.add_argument('-in', '--input_denoise', default='none',
-                        help='Input Denoise Strength')
-    parser.add_argument('-ii', '--input_stabilizer', action='store_true',
-                        help='Enable input image stabilizer')
-    parser.add_argument('-bs', '--blur_strength', default=cnf.blr_strength,
-                        help='Blur Strength (Kernel Size')
-    parser.add_argument('-fx', '--flip_x', action='store_true',
-                        help='Flip around X axis')
-    parser.add_argument('-fy', '--flip_y', action='store_true',
-                        help='Flip around Y axis')
-    parser.add_argument('-k', '--keyboard_shortcuts', action='store_true',
-                        help='Show Keyboard Shortcuts')
-    parser.add_argument('-ob', '--output_blur', action='store_true',
-                        help='Blur Output')
-    parser.add_argument('-oc', '--color_mode', default=cnf.color_mode,
-                        help='Output Pseudocolor mode (1-11)')
-    parser.add_argument('-oe', '--output_equalize', default=cnf.equ_out,
-                        help='Output Equalization Mode')
-    parser.add_argument('-of', '--output_filter', default=cnf.flt_out,
-                        help='Set Output Filter')
-    parser.add_argument('-ofs', '--output_filter_strength', default='none',
-                        help='Set Output Filter Strength')
-    parser.add_argument('-og', '--output_gain', default=cnf.gain_out, help='Output Gain')
-    parser.add_argument('-oi', '--output_stabilizer', action='store_true',
-                        help='Enable output image stabilizer')
-    parser.add_argument('-on', '--output_denoise', default='none',
-                        help='Output Denoise Strength')   
-    parser.add_argument('-om', '--output_mode', default=cnf.mode_out,
-                        help='Display Mode Output Window')
-    parser.add_argument('-ov', '--output_video', default='none',
-                        help='Save output as video (Path or Prefix).')
-    parser.add_argument('-os', '--output_images', default='none',
-                        help='Save output as image sequence (Path or Prefix).')
-    parser.add_argument('-pm', '--processing_mode', default=cnf.mode_prc,
-                        help='Set Processing Mode')
-    parser.add_argument('-ps', '--pattern_size', default=cnf.pattern_size,
-                        help='Schlieren Background Pattern Size')
-    parser.add_argument('-pt', '--pattern_type', default='none',
-                        help='Schlieren Background Pattern (1-3)')
-    parser.add_argument('-pz', '--stack_size', default=cnf.numframes,
-                        help='Image Stacking (No. of frames to stack)')
-    parser.add_argument('-ww', '--window_width', default=cnf.window_width,
-                        help='Width of displayed Windows')
-    parser.add_argument('-wh', '--window_height', default=cnf.window_height,
-                        help='Height of displayed Windows')
-    args = parser.parse_args()
-    
-    # kludge to show full help although we are parsing twice.
-    if args.help:
-        parser.print_help()
-        sys.exit(0) 
-
-    # process and sanitize command line arguments
-    if args.input_denoise != 'none':
-        cnf.dnz_inp = True
-        cnf.dnz_inp_str = float(args.input_denoise)
-    if args.output_denoise != 'none':
-        cnf.dnz_out = True
-        cnf.dnz_out_str = float(args.output_denoise)
-    cnf.equ_inp = int(args.input_equalize)
-    cnf.equ_out = int(args.output_equalize)
-    cnf.mode_out = int(args.output_mode)
-    cnf.mode_in = int(args.input_mode)
-    cnf.mode_prc = int(args.processing_mode)
-    cnf.gain_inp = float(args.input_gain)
-    cnf.gain_out = float(args.output_gain)
-    cnf.blr_inp = args.input_blur or cnf.blr_inp
-    cnf.blr_out = args.output_blur or cnf.blr_out
-    cnf.blr_strength = int(args.blur_strength)
-    cnf.flt_inp = int(args.input_filter)
-    cnf.flt_out = int(args.output_filter)
-    cnf.loop = args.loop_input or cnf.loop
-    cnf.stb_inp = args.input_stabilizer or cnf.stb_inp
-    cnf.stb_out = args.output_stabilizer or cnf.stb_out
-    cnf.flip_x = args.flip_x or cnf.flip_x
-    cnf.flip_y = args.flip_y or cnf.flip_y
-    if cnf.equ_inp >= 3:
-        cnf.equ_inp = 2
-    elif cnf.equ_inp <= -1:
-        cnf.equ_inp = 0
-    if cnf.equ_out >= 3:
-        cnf.equ_out = 2
-    elif cnf.equ_out <= -1:
-        cnf.equ_out = 0
-    if cnf.mode_prc >= 4:
-        cnf.mode_prc = 3
-    elif cnf.mode_prc <= -1:
-        cnf.mode_prc = 0
-    if cnf.mode_in >= 3:
-        cnf.mode_in = 2
-    elif cnf.mode_in <= -1:
-        cnf.mode_in = 0
-    if cnf.mode_out >= 3:
-        cnf.mode_out = 2
-    elif cnf.mode_out <= -1:
-        cnf.mode_out = 0
-    if int(args.stack_size) > 0:
-        cnf.numframes = int(args.stack_size)
-    if int(args.color_mode) <= 11 and int(args.color_mode) >= 0:
-        cnf.color_mode = int(args.color_mode)
-        cnf.pseudoc = True
-    if str(args.input_source).isdigit():
-        cnf.video_src = int(args.input_source)
-    else:
-        cnf.video_src = args.input_source
-    if args.keyboard_shortcuts:
-        show_help()
-        sys.exit(0)
-    if args.pattern_type != 'none':
-        cnf.pattern_mode = int(args.pattern_type)
-        if int(args.pattern_size) > 0:
-            cnf.pattern_size = int(args.pattern_size)
+    def inp_callback(self, instance, value):
+        if value == 'normal':
+            self.cnf.show_inp = False
+            self.showiimage = self.background
+            self.cnf.rootwidget.iimage_wid.texture = self.img2tex(
+                self.background)
+            self.cnf.rootwidget.iimage_wid.pos_hint = {'top': 3}
         else:
-            cnf.pattern_size = 4
-        cnf.pattern = draw_pattern()
-        cv2.imshow('Schlieren Background', cnf.pattern)
-    if int(args.pattern_size) > 0:
-        cnf.pattern_size = int(args.pattern_size)
-        cnf.pattern = draw_pattern()
-        cv2.imshow('Schlieren Background', cnf.pattern)
-    if args.output_video != 'none':
-        cnf.recordv = True
-        cnf.video_dst = args.output_video
-        video = VideoWriter(cnf.video_dst + gettime() + '.avi')
-        cnf.novfile = False
-    if args.output_images != 'none':
-        cnf.recordi = True
-        cnf.image_dst = args.output_images
-    cnf.window_width = int(args.window_width)
-    cnf.window_height = int(args.window_height)
+            self.cnf.show_inp = True
+            self.cnf.rootwidget.iimage_wid.pos_hint = {'top': 1}
 
-    # initialize video input
-    imageinput = vs.FrameInput(cnf.video_src, args.input_width, args.input_height)
-    imageinput.loop = cnf.loop
-    cnf.video_width = imageinput.frame_width
-    cnf.video_height = imageinput.frame_height
+    def istab_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.stb_inp = True
+        else:
+            self.cnf.stb_inp = False
 
-    # we wait to make sure whoever started this program has released RETURN
-    time.sleep(1)
-    nokey = cv2.waitKey(5)  # get value for "no key pressed"
+    def iauto_callback(self, instance):
+        gain, offset = self.cnf.imagestack.autoInpGain()
+        self.cnf.rootwidget.igain_wid.value = float(gain)
+        self.cnf.rootwidget.ioffset_wid.value = float(offset)
 
-    # load filter kernels
-    kernels = flt.Kernels()
-    numkernels = kernels.get_numkernels()
-    flt_inp_name, cnf.inp_kernel, cnf.flt_inp_strength = kernels.get_kernel(cnf.flt_inp)
-    flt_out_name, cnf.out_kernel, cnf.flt_out_strength = kernels.get_kernel(cnf.flt_out)
-    if args.input_filter_strength != 'none':
-        cnf.flt_inp_strength = float(args.input_filter_strength)
-    if args.output_filter_strength != 'none':
-        cnf.flt_out_strength = float(args.output_filter_strength)
-    
-    # prepare stack
-    imagestack = fs.FrameStack(cnf.numframes, cnf.video_width, cnf.video_height)
-   
-    # apply loaded settings to stack
-    apply_settings()
-    
-    # create a CLAHE object (Contrast Limited Adaptive Histogram Equalization)
-    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4, 4))
+    def igain_callback(self, instance, value):
+        self.cnf.gain_inp = value
+        self.apply_settings()
 
-    # create windows and GUI
-    cv2.namedWindow('Processed Output', 0)
-    cv2.namedWindow('Input', 0)
-    cv2.resizeWindow('Input', cnf.window_width, cnf.window_height)
-    cv2.resizeWindow('Processed Output', cnf.window_width, cnf.window_height)
-    cv2.moveWindow('Input', cnf.window_x, cnf.window_y)
-    cv2.moveWindow('Processed Output', cnf.window_x + cnf.window_width +
-                   cnf.window_space, cnf.window_y)
-    set_osd()
+    def ioffset_callback(self, instance, value):
+        self.cnf.offset_inp = value
+        self.apply_settings()
 
-    # prepare on screen vector display
-    center_x = int(cnf.video_width / 2)
-    center_y = int(cnf.video_height / 2)
-    center = (center_x, center_y)
-    vec_zoom_2 = cnf.vec_zoom / 2
-    background = np.full((cnf.video_height, cnf.video_width, 3),
-                         imagestack.default_value, np.uint8)
-    
-    # keep image aspect ratio of video input
-    image_height = int(cnf.video_height / cnf.video_width * cnf.window_width)
-    
-    # prepare image stabilizer
-    inp = imageinput.grab_frame()
-    inp = cv2.cvtColor(inp, cv2.COLOR_BGR2GRAY)
-    inp_old = inp.copy()
-    inp_raw = inp.copy()
-    dsp_old = inp.copy()
-    dsp_raw = inp.copy()
+    def iblur_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.blr_inp = True
+        else:
+            self.cnf.blr_inp = False
+        self.apply_settings()
+
+    def idnz_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.dnz_inp = True
+        else:
+            self.cnf.dnz_inp = False
+
+    def iequ_callback(self, instance, value):
+        if value == 'HIST':
+            self.cnf.equ_inp = 1
+        elif value == 'CLAHE':
+            self.cnf.equ_inp = 2
+        else:
+            self.cnf.equ_inp = 0
+
+    def iflt_callback(self, instance, value):
+        self.cnf.flt_inp = 0
+        for k in range(1, self.cnf.numkernels):
+            if self.cnf.kernels.get_kernel(k)[0] == value:
+                self.cnf.flt_inp = k
+                self.cnf.flt_inp_name, self.cnf.inp_kernel, self.cnf.flt_inp_strength = self.cnf.kernels.get_kernel(
+                    self.cnf.flt_inp)
+                self.apply_settings()
+
+    def out_callback(self, instance, value):
+        if value == 'normal':
+            self.cnf.show_out = False
+            self.showoimage = self.background
+        else:
+            self.cnf.show_out = True
+
+    def ostab_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.stb_out = True
+        else:
+            self.cnf.stb_out = False
+
+    def oauto_callback(self, instance):
+        gain, offset = self.cnf.imagestack.autoOutGain()
+        self.cnf.rootwidget.ogain_wid.value = float(gain)
+        self.cnf.rootwidget.ooffset_wid.value = float(offset)
+
+    def ogain_callback(self, instance, value):
+        self.cnf.gain_out = value
+        self.apply_settings()
+
+    def ooffset_callback(self, instance, value):
+        self.cnf.offset_out = value
+        self.apply_settings()
+
+    def oblur_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.blr_out = True
+        else:
+            self.cnf.blr_out = False
+        self.apply_settings()
+
+    def odnz_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.dnz_out = True
+        else:
+            self.cnf.dnz_out = False
+
+    def oequ_callback(self, instance, value):
+        if value == 'HIST':
+            self.cnf.equ_out = 1
+        elif value == 'CLAHE':
+            self.cnf.equ_out = 2
+        else:
+            self.cnf.equ_out = 0
+
+    def oflt_callback(self, instance, value):
+        self.cnf.flt_out = 0
+        for k in range(1, self.cnf.numkernels):
+            if self.cnf.kernels.get_kernel(k)[0] == value:
+                self.cnf.flt_out = k
+                self.cnf.flt_out_name, self.cnf.out_kernel, self.cnf.flt_out_strength = self.cnf.kernels.get_kernel(
+                    self.cnf.flt_out)
+                self.apply_settings()
+
+    def stack_callback(self, instance, value):
+        self.cnf.numframes = int(value)
+        self.apply_settings()
+
+    def proc_callback(self, instance, value):
+        if value == 'AVG':
+            self.cnf.mode_prc = 1
+        elif value == 'DIFF':
+            self.cnf.mode_prc = 2
+        elif value == 'CUMSUM':
+            self.cnf.mode_prc = 3
+        else:
+            self.cnf.mode_prc = 0
+        self.apply_settings()
+
+    def dark_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.dyn_dark = True
+        else:
+            self.cnf.dyn_dark = False
+        self.apply_settings()
+
+    def reset_callback(self, instance):
+        if self.cnf.mode_prc == 3:
+            self.cnf.imagestack.resetCUMSUM()
+        else:
+            self.cnf.rootwidget.igain_wid.value = 1
+            self.cnf.rootwidget.ogain_wid.value = 1
+            self.cnf.rootwidget.ioffset_wid.value = 0
+            self.cnf.rootwidget.ooffset_wid.value = 0
+
+    def screenshot_callback(self, instance):
+        self.cnf.filename = self.cnf.output_path + \
+            'Screenshot-' + self.cnf.gettime() + '.bmp'
+        cv2.imwrite(self.cnf.filename, self.cnf.out)
+
+    def play_callback(self, instance, value):
+        if value == 'down':
+            Clock.schedule_interval(self.update, 1.0 / 33.0)
+        else:
+            Clock.unschedule(self.update)
+
+    def loop_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.loop = True
+        else:
+            self.cnf.loop = False
+        self.imageinput.loop = self.cnf.loop
+
+    def video_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.video = VideoWriter(
+                self.cnf.video_dst + self.cnf.gettime() + '.avi')
+            self.cnf.recordv = True
+        else:
+            self.cnf.recordv = False
+
+    def imagesequence_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.recordi = True
+        else:
+            self.cnf.recordi = False
+
+    def help_callback(self, instance, value):
+        if value == 'down':
+            self.help_in.start(self.cnf.rootwidget.helpbox_wid)
+        else:
+            self.help_out.start(self.cnf.rootwidget.helpbox_wid)
+
+    def colors_callback(self, instance):
+        self.cnf.color_mode += 1
+        if self.cnf.color_mode > 11:
+            self.cnf.pseudoc = False
+            self.cnf.color_mode = -1
+            self.cnf.rootwidget.colors_wid.text = 'GREY'
+        else:
+            self.cnf.pseudoc = True
+            self.cnf.rootwidget.colors_wid.text = self.cnf.colormaps[self.cnf.color_mode]
+
+    def flipx_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.flip_x = True
+        else:
+            self.cnf.flip_x = False
+        self.apply_settings()
+
+    def flipy_callback(self, instance, value):
+        if value == 'down':
+            self.cnf.flip_y = True
+        else:
+            self.cnf.flip_y = False
+        self.apply_settings()
+
+    def img2tex(self, img):
+        buf1 = cv2.flip(img, 0)
+        buf = buf1.tostring()
+        tex = Texture.create(size=(img.shape[1], img.shape[0]), colorfmt='bgr')
+        tex.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
+        return tex
+
+    def build(self):
+        self.cnf = config.Settings()
+
+        # load filter kernels
+        self.cnf.kernels = flt.Kernels()
+        self.cnf.numkernels = self.cnf.kernels.get_numkernels()
+        self.cnf.flt_inp_name, self.cnf.inp_kernel, self.cnf.flt_inp_strength = self.cnf.kernels.get_kernel(
+            self.cnf.flt_inp)
+        self.cnf.flt_out_name, self.cnf.out_kernel, self.cnf.flt_out_strength = self.cnf.kernels.get_kernel(
+            self.cnf.flt_out)
+
+        # Kivy stuff
+        # define widget animations
+        self.ibar_in = Animation(pos_hint={'right': 0.1})
+        self.ibar_out = Animation(pos_hint={'right': 0})
+        self.obar_in = Animation(pos_hint={'right': 1})
+        self.obar_out = Animation(pos_hint={'right': 1.1})
+        self.outb_large = Animation(pos_hint={'x': 0, 'top': 1}, size_hint_x=1)
+        self.outb_small = Animation(
+            pos_hint={'x': 0.1, 'top': 1}, size_hint_x=0.8)
+        self.inpb_large = Animation(pos_hint={'x': 0, 'top': 1})
+        self.inpb_small = Animation(pos_hint={'x': 0.1, 'top': 1})
+        self.bpan_in = Animation(pos_hint={'top': 0.1})
+        self.bpan_out = Animation(pos_hint={'top': 0})
+        self.tpan_in = Animation(pos_hint={'top': 1})
+        self.tpan_out = Animation(pos_hint={'top': 1.1})
+        self.help_out = Animation(pos_hint={'top': 2.2})
+        self.help_in = Animation(pos_hint={'top': 1})
+
+        # create Kivy UI
+        self.cnf.rootwidget = MyScreen()
+        self.namelist = ['FLT-OFF']
+        for k in range(1, self.cnf.numkernels):
+            self.namelist.append(self.cnf.kernels.get_kernel(k)[0])
+        self.cnf.rootwidget.iflt_wid.values = self.namelist
+        self.cnf.rootwidget.oflt_wid.values = self.namelist
+        self.cnf.rootwidget.osd_wid.bind(state=self.osd_callback)
+        self.cnf.rootwidget.vec_wid.bind(state=self.vec_callback)
+        self.cnf.rootwidget.inp_wid.bind(state=self.inp_callback)
+        self.cnf.rootwidget.out_wid.bind(state=self.out_callback)
+        self.cnf.rootwidget.iauto_wid.bind(on_release=self.iauto_callback)
+        self.cnf.rootwidget.igain_wid.bind(value=self.igain_callback)
+        self.cnf.rootwidget.ioffset_wid.bind(value=self.ioffset_callback)
+        self.cnf.rootwidget.oauto_wid.bind(on_release=self.oauto_callback)
+        self.cnf.rootwidget.ogain_wid.bind(value=self.ogain_callback)
+        self.cnf.rootwidget.ooffset_wid.bind(value=self.ooffset_callback)
+        self.cnf.rootwidget.iblur_wid.bind(state=self.iblur_callback)
+        self.cnf.rootwidget.idnz_wid.bind(state=self.idnz_callback)
+        self.cnf.rootwidget.oblur_wid.bind(state=self.oblur_callback)
+        self.cnf.rootwidget.odnz_wid.bind(state=self.odnz_callback)
+        self.cnf.rootwidget.istab_wid.bind(state=self.istab_callback)
+        self.cnf.rootwidget.ostab_wid.bind(state=self.ostab_callback)
+        self.cnf.rootwidget.iequ_wid.bind(text=self.iequ_callback)
+        self.cnf.rootwidget.oequ_wid.bind(text=self.oequ_callback)
+        self.cnf.rootwidget.iflt_wid.bind(text=self.iflt_callback)
+        self.cnf.rootwidget.oflt_wid.bind(text=self.oflt_callback)
+        self.cnf.rootwidget.stack_wid.bind(value=self.stack_callback)
+        self.cnf.rootwidget.proc_wid.bind(text=self.proc_callback)
+        self.cnf.rootwidget.dark_wid.bind(state=self.dark_callback)
+        self.cnf.rootwidget.reset_wid.bind(on_release=self.reset_callback)
+        self.cnf.rootwidget.play_wid.bind(state=self.play_callback)
+        self.cnf.rootwidget.loop_wid.bind(state=self.loop_callback)
+        self.cnf.rootwidget.screenshot_wid.bind(
+            on_release=self.screenshot_callback)
+        self.cnf.rootwidget.video_wid.bind(state=self.video_callback)
+        self.cnf.rootwidget.imagesequence_wid.bind(
+            state=self.imagesequence_callback)
+        self.cnf.rootwidget.help_wid.bind(state=self.help_callback)
+        self.cnf.rootwidget.colors_wid.bind(on_release=self.colors_callback)
+        self.cnf.rootwidget.flipx_wid.bind(state=self.flipx_callback)
+        self.cnf.rootwidget.flipy_wid.bind(state=self.flipy_callback)
+
+        # command line parser
+        parser = argparse.ArgumentParser(
+            description='Python Frame Sequence Processor', add_help=True)
+        parser.add_argument('-c', '--config_file', default='none',
+                            help='Load Configuration from file')
+        parser.add_argument('-is', '--input_source', default=self.cnf.video_src,
+                            help='Input Source, filename or camera index')
+        parser.add_argument('-iw', '--input_width', default=self.cnf.video_width,
+                            help='Width of captured frames')
+        parser.add_argument('-ih', '--input_height', default=self.cnf.video_height,
+                            help='Height of captured frames')
+        parser.add_argument('-ib', '--input_blur', action='store_true',
+                            help='Blur Input')
+        parser.add_argument('-ie', '--input_equalize', default=self.cnf.rootwidget.iequ_wid.text,
+                            help='Input Equalization Mode')
+        parser.add_argument('-if', '--input_filter', default=self.cnf.rootwidget.iflt_wid.text,
+                            help='Set Input Filter')
+        parser.add_argument('-ifs', '--input_filter_strength', default='none',
+                            help='Set Input Filter Strength')
+        parser.add_argument('-ig', '--input_gain', default=self.cnf.rootwidget.igain_wid.value,
+                            help='Input Gain')
+        parser.add_argument('-il', '--loop_input', action='store_true',
+                            help='Loop input video')
+        parser.add_argument('-in', '--input_denoise', action='store_true',
+                            help='Input Denoise')
+        parser.add_argument('-ii', '--input_stabilizer', action='store_true',
+                            help='Enable input image stabilizer')
+        parser.add_argument('-bs', '--blur_strength', default=self.cnf.blr_strength,
+                            help='Blur Strength (Kernel Size')
+        parser.add_argument('-fx', '--flip_x', action='store_true',
+                            help='Flip around X axis')
+        parser.add_argument('-fy', '--flip_y', action='store_true',
+                            help='Flip around Y axis')
+        parser.add_argument('-ob', '--output_blur', action='store_true',
+                            help='Blur Output')
+        parser.add_argument('-oc', '--color_mode', default=self.cnf.rootwidget.colors_wid.text,
+                            help='Output Color Mode')
+        parser.add_argument('-oe', '--output_equalize', default=self.cnf.rootwidget.oequ_wid.text,
+                            help='Output Equalization Mode')
+        parser.add_argument('-of', '--output_filter', default=self.cnf.rootwidget.oflt_wid.text,
+                            help='Set Output Filter')
+        parser.add_argument('-ofs', '--output_filter_strength', default='none',
+                            help='Set Output Filter Strength')
+        parser.add_argument('-og', '--output_gain',
+                            default=self.cnf.rootwidget.ogain_wid.value, help='Output Gain')
+        parser.add_argument('-oi', '--output_stabilizer', action='store_true',
+                            help='Enable output image stabilizer')
+        parser.add_argument('-on', '--output_denoise',  action='store_true',
+                            help='Output Denoise')
+        parser.add_argument('-ov', '--output_video', default='none',
+                            help='Save output as video (Path or Prefix).')
+        parser.add_argument('-os', '--output_images', default='none',
+                            help='Save output as image sequence (Path or Prefix).')
+        parser.add_argument('-pm', '--processing_mode', default=self.cnf.rootwidget.proc_wid.text,
+                            help='Set Processing Mode')
+        parser.add_argument('-pz', '--stack_size', default=self.cnf.rootwidget.stack_wid.value,
+                            help='Image Stacking (No. of frames to stack)')
+
+        self.args = parser.parse_args(sys.argv[2:])
+        if str(self.args.input_source).isdigit():
+            self.cnf.video_src = int(self.args.input_source)
+        else:
+            self.cnf.video_src = self.args.input_source
+
+        # initialize video input
+        self.cnf.video_width = self.args.input_width
+        self.cnf.video_height = self.args.input_height
+        self.imageinput = vs.FrameInput(
+            self.cnf.video_src, self.cnf.video_width, self.cnf.video_height)
+        self.imageinput.loop = self.cnf.loop
+        self.cnf.video_width = self.imageinput.frame_width
+        self.cnf.video_height = self.imageinput.frame_height
+
+        # prepare stack
+        self.cnf.imagestack = fs.FrameStack(
+            self.cnf.numframes, self.cnf.video_width, self.cnf.video_height)
+
+        # apply loaded settings to stack
+        self.apply_settings()
+        # load command line arguments and update UI and settings
+        self.update_controls(self.args)
+
+        # create a CLAHE object (Contrast Limited Adaptive Histogram
+        # Equalization)
+        self.clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4, 4))
+
+        # prepare on screen vector display
+        self.center_x = int(self.cnf.video_width / 2)
+        self.center_y = int(self.cnf.video_height / 2)
+        self.center = (self.center_x, self.center_y)
+        self.vec_zoom_2 = self.cnf.vec_zoom / 2
+        self.background = np.full((self.cnf.video_height, self.cnf.video_width, 3),
+                                  self.cnf.imagestack.default_value, np.uint8)
+
+        # prepare image stabilizer
+        self.inp = self.imageinput.grab_frame()
+        self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
+        self.inp_old = self.inp.copy()
+        self.inp_raw = self.inp.copy()
+        self.dsp_old = self.inp.copy()
+        self.dsp_raw = self.inp.copy()
+
+        Clock.schedule_interval(self.update, 1.0 / 33.0)
+        return self.cnf.rootwidget
 
     # main video processing loop
-    while True:
-        inp = imageinput.grab_frame()
-        inp = cv2.cvtColor(inp, cv2.COLOR_BGR2GRAY)
-        if cnf.dnz_inp:
-            cv2.fastNlMeansDenoising(inp, inp, cnf.dnz_inp_str, 7, 21)
-        if cnf.equ_inp == 1:
-            inp = cv2.equalizeHist(inp)
-        elif cnf.equ_inp == 2:
-            inp = clahe.apply(inp)
-        elif cnf.flt_inp != 0:
-            inp = cv2.filter2D(inp, -1, cnf.flt_inp_kernel)
-        if cnf.stb_inp:
-            transform = cv2.estimateRigidTransform(inp_old, inp, False)
-            if transform is not None:
-                inp = cv2.warpAffine(inp, transform, (cnf.video_width, cnf.video_height), inp_raw, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
-        inp_old = inp
-        imagestack.addFrame(inp)
-        if cnf.mode_prc == 0:
-            dsp = imagestack.getINP()
-        elif cnf.mode_prc == 1:
-            dsp = imagestack.getAVG()
-        elif cnf.mode_prc == 2:
-            dsp = imagestack.getDIFF()
-        elif cnf.mode_prc == 3:
-            dsp = imagestack.getCUMSUM()
-        if cnf.stb_out:
-            transform = cv2.estimateRigidTransform(dsp_old, dsp, False)
-            if transform is not None:
-                dsp = cv2.warpAffine(dsp, transform, (cnf.video_width, cnf.video_height), dsp_raw, cv2.INTER_NEAREST|cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
-        dsp_old = dsp
-        if cnf.equ_out == 1:
-            dsp = cv2.equalizeHist(dsp)
-        elif cnf.equ_out == 2:
-            dsp = clahe.apply(dsp)
-        if cnf.dnz_out:
-            cv2.fastNlMeansDenoising(dsp, dsp, cnf.dnz_out_str, 7, 21)
-        elif cnf.flt_out != 0:
-            dsp = cv2.filter2D(dsp, -1, cnf.flt_out_kernel)
-
-        # create input image
-        if cnf.mode_in == 1:
-            inp = np.copy(background)
+    def update(self, dt):
+        self.inp = self.imageinput.grab_frame()
+        self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
+        if self.cnf.dnz_inp:
+            cv2.fastNlMeansDenoising(
+                self.inp, self.inp, self.cnf.dnz_inp_str, 7, 21)
+        if self.cnf.equ_inp == 1:
+            self.inp = cv2.equalizeHist(self.inp)
+        elif self.cnf.equ_inp == 2:
+            self.inp = self.clahe.apply(self.inp)
+        elif self.cnf.flt_inp != 0:
+            self.inp = cv2.filter2D(self.inp, -1, self.cnf.flt_inp_kernel)
+        if self.cnf.stb_inp:
+            self.transform = cv2.estimateRigidTransform(
+                self.inp_old, self.inp, False)
+            if self.transform is not None:
+                self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
+                                          self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+        self.inp_old = self.inp
+        if self.cnf.imagestack.addFrame(self.inp):
+            self.cnf.rootwidget.stackdisplay_wid.color = (1, 0, 0, 1)
         else:
-            inp = cv2.cvtColor(np.uint8(imagestack.inp_frame),
-                               cv2.COLOR_GRAY2BGR)
-        inp = cv2.resize(inp, (cnf.window_width, image_height))
-        if cnf.mode_in <= 1:
-            cv2.putText(inp, cnf.osd_inp, (12, 41), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.black, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_inp, (10, 40), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.green, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_out, (12, 71), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.black, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_out, (10, 70), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.green, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_col, (12, 101), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.black, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_col, (10, 100), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.green, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_mode, (12, 131), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.black, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            cv2.putText(inp, cnf.osd_mode, (10, 130), cv2.FONT_HERSHEY_PLAIN,
-                        cnf.osd_txtsize, cnf.blue, thickness=cnf.osd_txtline,
-                        lineType=cv2.CV_AA)
-            if cnf.recordv or cnf.recordi:
-                cv2.putText(inp, cnf.osd_recording, (12, 161),
-                            cv2.FONT_HERSHEY_PLAIN, cnf.osd_txtsize, cnf.black,
-                            thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-                cv2.putText(inp, cnf.osd_recording, (10, 160),
-                            cv2.FONT_HERSHEY_PLAIN, cnf.osd_txtsize, cnf.red,
-                            thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-            if imagestack.filling_stack:
-                cv2.putText(inp, "Filling Stack", (12, 191),
-                            cv2.FONT_HERSHEY_PLAIN, cnf.osd_txtsize, cnf.black,
-                            thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-                cv2.putText(inp, "Filling Stack", (10, 190),
-                            cv2.FONT_HERSHEY_PLAIN, cnf.osd_txtsize, cnf.red,
-                            thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-        cv2.imshow('Input', inp)
+            self.cnf.rootwidget.stackdisplay_wid.color = (0, 1, 0, 1)
+        if self.cnf.mode_prc == 0:
+            self.dsp = self.cnf.imagestack.getINP()
+        elif self.cnf.mode_prc == 1:
+            self.dsp = self.cnf.imagestack.getAVG()
+        elif self.cnf.mode_prc == 2:
+            self.dsp = self.cnf.imagestack.getDIFF()
+        elif self.cnf.mode_prc == 3:
+            self.dsp = self.cnf.imagestack.getCUMSUM()
+        if self.cnf.stb_out:
+            self.transform = cv2.estimateRigidTransform(
+                self.dsp_old, self.dsp, False)
+            if self.transform is not None:
+                self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height),
+                                          self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+        self.dsp_old = self.dsp
+        if self.cnf.equ_out == 1:
+            self.dsp = cv2.equalizeHist(self.dsp)
+        elif self.cnf.equ_out == 2:
+            self.dsp = self.clahe.apply(self.dsp)
+        if self.cnf.dnz_out:
+            cv2.fastNlMeansDenoising(
+                self.dsp, self.dsp, self.cnf.dnz_out_str, 7, 21)
+        elif self.cnf.flt_out != 0:
+            self.dsp = cv2.filter2D(self.dsp, -1, self.cnf.flt_out_kernel)
 
         # create output image
-        if cnf.mode_out == 1:
-            out = np.copy(background)
-        elif cnf.pseudoc:
-            out = cv2.applyColorMap(dsp, cnf.color_mode)
+        if self.cnf.pseudoc:
+            self.cnf.out = cv2.applyColorMap(self.dsp, self.cnf.color_mode)
         else:
-            out = cv2.cvtColor(dsp, cv2.COLOR_GRAY2BGR)
-        if cnf.mode_out >= 1:
-            full_avg, x_avg, y_avg = imagestack.getVECTOR(cnf.vec_zoom)
-            x_avg = int(x_avg)
-            y_avg = int(y_avg)
-            cv2.line(out, center, (x_avg, y_avg), cnf.green,
-                     thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-            cv2.circle(out, (x_avg, y_avg), 20, cnf.red,
-                       thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
-        cv2.imshow('Processed Output', out)
-        
-        # record video or image sequence
-        if cnf.recordv:
-            video.writeFrame(out)
-        if cnf.recordi:
-            if cnf.imgindx == 0:
-                cnf.image_dst += gettime()
-            filename = cnf.image_dst + str(cnf.imgindx).zfill(8) + '.bmp'
-            cv2.imwrite(filename, out)
-            cnf.imgindx += 1
+            self.cnf.out = cv2.cvtColor(self.dsp, cv2.COLOR_GRAY2BGR)
+        # display output image
+        if self.cnf.show_out == True:
+            self.showoimage = self.cnf.out
+        if self.cnf.show_vec:
+            if self.cnf.show_out == False:
+                self.showoimage = self.background.copy()
+            self.full_avg, self.x_avg, self.y_avg = self.cnf.imagestack.getVECTOR(
+                self.cnf.vec_zoom)
+            self.x_avg = int(self.x_avg)
+            self.y_avg = int(self.y_avg)
+            cv2.line(self.showoimage, self.center, (self.x_avg, self.y_avg), self.cnf.green,
+                     thickness=self.cnf.osd_txtline, lineType=cv2.CV_AA)
+            cv2.circle(self.showoimage, (self.x_avg, self.y_avg), 20, self.cnf.red,
+                       thickness=self.cnf.osd_txtline, lineType=cv2.CV_AA)
+        self.cnf.rootwidget.oimage_wid.texture = self.img2tex(self.showoimage)
+        # create and show input image
+        if self.cnf.show_inp == True:
+            self.showiimage = cv2.cvtColor(np.uint8(self.cnf.imagestack.inp_frame),
+                                           cv2.COLOR_GRAY2BGR)
+            height, width, channels = self.cnf.out.shape
+            self.showiimage = cv2.resize(self.showiimage, (width, height))
+            self.cnf.rootwidget.iimage_wid.texture = self.img2tex(
+                self.showiimage)
 
-        # process keyboard input and update OSD
-        keyscan = cv2.waitKey(5)
-        if keyscan != nokey:
-            asckey = 0xFF & keyscan
-            if asckey == 97:  # a auto adjust input gain and offset
-                imagestack.autoInpGain()
-                cnf.gain_inp = imagestack.gain_inp
-                cnf.offset_inp = imagestack.offset_inp
-            if asckey == 65:  # A auto adjust output gain and offset
-                imagestack.autoOutGain()
-                cnf.gain_out = imagestack.gain_out
-                cnf.offset_out = imagestack.offset_out
-            if asckey == 98:  # b blur input
-                cnf.blr_inp = not cnf.blr_inp
-            elif asckey == 66:  # B blur output
-                cnf.blr_out = not cnf.blr_out
-            elif asckey == 99:  # c choose color palette
-                cnf.color_mode += 1
-                if cnf.color_mode > 11:
-                    cnf.pseudoc = False
-                    cnf.color_mode = -1
-                else:
-                    cnf.pseudoc = True
-            elif asckey == 100:  # d use current average as dark frame
-                cnf.dyn_dark = not cnf.dyn_dark
-            elif asckey == 101:  # e Cycle input equalization
-                cnf.equ_inp += 1
-                if cnf.equ_inp >= 3:
-                    cnf.equ_inp = 0
-            elif asckey == 69:  # E Cycle output equalization
-                cnf.equ_out += 1
-                if cnf.equ_out >= 3:
-                    cnf.equ_out = 0
-            elif asckey == 102:  # f Cycle input filters
-                cnf.flt_inp += 1
-                if cnf.flt_inp >= numkernels:
-                    cnf.flt_inp = 0
-                flt_inp_name, cnf.inp_kernel, cnf.flt_inp_strength = kernels.get_kernel(cnf.flt_inp)
-            elif asckey == 70:  # F Cycle output filters
-                cnf.flt_out += 1
-                if cnf.flt_out >= numkernels:
-                    cnf.flt_out = 0
-                flt_out_name, cnf.out_kernel, cnf.flt_out_strength = kernels.get_kernel(cnf.flt_out)
-            elif asckey == 104:  # h show help
-                show_help()
-            elif asckey == 105: # i toggle input image stabilizer
-                cnf.stb_inp = not cnf.stb_inp
-            elif asckey == 73: # I toggle output image stabilizer
-                cnf.stb_out = not cnf.stb_out
-            elif asckey == 108: # l toggle input video loop mode
-                cnf.loop = not cnf.loop
-            elif asckey == 109:  # m input mode
-                cnf.mode_in += 1
-                if cnf.mode_in >= 3:
-                    cnf.mode_in = 0
-            elif asckey == 77:  # M output mode
-                cnf.mode_out += 1
-                if cnf.mode_out >= 3:
-                    cnf.mode_out = 0
-            elif asckey == 110:  # n denoise input
-                cnf.dnz_inp = not cnf.dnz_inp
-            elif asckey == 78:  # N denoise output
-                cnf.dnz_out = not cnf.dnz_out
-            elif asckey == 112:  # p processing mode
-                cnf.mode_prc += 1
-                if cnf.mode_prc >= 4:
-                    cnf.mode_prc = 0
-            elif asckey == 113:  # q terminates program
-                sys.exit(0)
-            elif asckey == 114:  # r reset cumulative summing
-                imagestack.resetCUMSUM()
-            elif asckey == 82:  # R reset gain and offset
-                cnf.gain_inp = cnf.gain_inp
-                cnf.gain_out = cnf.gain_out
-                cnf.offset_inp = 0
-                cnf.offset_out = 0
-            elif asckey == 115: # s save settings
-                cnf.cfgfilename = 'SavedSettings-' + gettime() + '.conf'
-                cnf.write_config(cnf.cfgfilename)
-            elif asckey == 83: # S load settings
-                cnf.read_config(cnf.cfgfilename)
-            elif asckey == 118: # v toggle video recording
-                cnf.recordv = not cnf.recordv
-                if cnf.recordv:
-                    if cnf.novfile:
-                        video = VideoWriter(cnf.video_dst + gettime() + '.avi')
-                        cnf.novfile = False
-                else:
-                    cnf.novfile = True
-            elif asckey == 86: # V toggle image sequence recording
-                cnf.recordi = not cnf.recordi
-            elif asckey == 63:  # ? cycle schlieren pattern type
-                cnf.pattern_mode += 1
-                if cnf.pattern_mode > 3:
-                    cnf.pattern_mode = 1
-                if cnf.pattern_size == 0:
-                    cnf.pattern_size = 4
-                cnf.pattern = draw_pattern()
-            elif asckey == 62: # > increase schlieren pattern size
-                cnf.pattern_size += 1
-                cnf.pattern = draw_pattern()
-            elif asckey == 60: # < decrease schlieren pattern size
-                cnf.pattern_size -= 1
-                cnf.pattern = draw_pattern()
-            elif asckey == 120:  # x flip around X axis
-                cnf.flip_x = not cnf.flip_x
-            elif asckey == 121:  # y flip around Y axis
-                cnf.flip_y = not cnf.flip_y
-            elif asckey == 93:  # ] increase input gain
-                cnf.gain_inp += cnf.gain_increment
-            elif asckey == 91:  # [ decrease input gain
-                cnf.gain_inp -= cnf.gain_increment
-            elif asckey == 125:  # } increase output gain
-                cnf.gain_out += cnf.gain_increment
-            elif asckey == 123:  # { decrease output gain
-                cnf.gain_out -= cnf.gain_increment
-            elif asckey == 43:  # + increase input filter strength
-                cnf.flt_inp_strength += cnf.flt_strength_increment
-            elif asckey == 45:  # - decrease input filter strength
-                cnf.flt_inp_strength -= cnf.flt_strength_increment
-            elif asckey == 61:  # = increase output filter strength
-                cnf.flt_out_strength += cnf.flt_strength_increment
-            elif asckey == 95:  # _ decrease output filter strength
-                cnf.flt_out_strength -= cnf.flt_strength_increment
-            elif asckey == 32:  # SPACE create screenshot
-                filename = cnf.output_path + 'Screenshot-' + gettime() + '.bmp'
-                cv2.imwrite(filename, out)
-            elif asckey >= 49 and asckey <= 57:  # no of frames to stack
-                cnf.numframes = asckey - 48
-            if cnf.backgnd:
-                cv2.imshow('Schlieren Background', cnf.pattern)
-            apply_settings()
-            set_osd()
-    sys.exit(0)
+        # record video or image sequence
+        if self.cnf.recordv:
+            self.cnf.video.writeFrame(self.cnf.out)
+        if self.cnf.recordi:
+            if self.cnf.imgindx == 0:
+                self.cnf.image_dst += self.cnf.gettime()
+            self.cnf.filename = self.cnf.image_dst + \
+                str(self.cnf.imgindx).zfill(8) + '.bmp'
+            cv2.imwrite(self.cnf.filename, self.cnf.out)
+            self.cnf.imgindx += 1
+
+
+if __name__ == '__main__':
+    PyFSProApp().run()

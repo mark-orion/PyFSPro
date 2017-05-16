@@ -47,22 +47,22 @@ class FrameStack:
         if self.ulimit != 0 and self.llimit != 0:
             self.pixelvalue += np.random.uniform(self.llimit, self.ulimit)
         return np.full((self.height, self.width), self.pixelvalue, np.float32)
-        
+
     def setKernel(self, kernel_size):
         self.kernel_size = kernel_size
         self.kernel_value = float(1 / kernel_size)
         self.kernel = [self.kernel_value for self.i in range(self.kernel_size)]
-        
+
     def addFrame(self, frame):
-        self.addFloatFrame(np.float32(frame))
-    
+        return self.addFloatFrame(np.float32(frame))
+
     def addFloatFrame(self, frame):
         self.raw_inp = frame
         if self.flip_x:
             self.raw_inp = np.flipud(self.raw_inp)
         if self.flip_y:
-            self.raw_inp = np.fliplr(self.raw_inp)       
-        self.inp_frame = abs(self.raw_inp + self.offset_inp) * self.gain_inp
+            self.raw_inp = np.fliplr(self.raw_inp)
+        self.inp_frame = np.clip(abs(self.raw_inp + self.offset_inp) * self.gain_inp, 0, 255)
         if self.blr_inp:
             for self.r in range(self.height):
                 self.inp_frame[self.r, :] = np.convolve(self.inp_frame[self.r, :], self.kernel, 'same')
@@ -148,16 +148,16 @@ class FrameStack:
     def autoInpGain(self):
         self.max_inp = np.nanmax(self.raw_inp)
         self.min_inp = np.nanmin(self.raw_inp)
-        self.gain_inp = 255 / abs(self.max_inp - self.min_inp)
-        self.offset_inp = -self.min_inp
-        return
+        gain_inp = 255 / abs(self.max_inp - self.min_inp)
+        offset_inp = -self.min_inp
+        return gain_inp, offset_inp
 
     def autoOutGain(self):
         self.max_out = np.nanmax(self.raw_out)
         self.min_out = np.nanmin(self.raw_out)
-        self.gain_out = 255 / abs(self.max_out - self.min_out)
-        self.offset_out = -self.min_out
-        return
+        gain_out = 255 / abs(self.max_out - self.min_out)
+        offset_out = -self.min_out
+        return gain_out, offset_out
 
     def initStack(self, stackrange):
         self.stackrange = stackrange

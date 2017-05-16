@@ -1,0 +1,292 @@
+
+<MyScreen>:
+    oimage_wid: my_oimage.__self__
+    iimage_wid: my_iimage.__self__
+    osd_wid: my_osd.__self__
+    vec_wid: my_vec.__self__
+    ipan_wid: my_ipan.__self__
+    opan_wid: my_opan.__self__
+    mid_wid: my_middle.__self__
+    inp_wid: my_input.__self__
+    out_wid: my_output.__self__
+    inpb_wid: my_inpbox.__self__
+    outb_wid: my_outbox.__self__
+    bpan_wid: my_bpan.__self__
+    tpan_wid: my_tpan.__self__
+    igain_wid: my_igain.__self__
+    ioffset_wid: my_ioffset.__self__
+    iauto_wid: my_iauto.__self__
+    ogain_wid: my_ogain.__self__
+    ooffset_wid: my_ooffset.__self__
+    oauto_wid: my_oauto.__self__
+    iblur_wid: my_iblur.__self__
+    idnz_wid: my_idnz.__self__
+    oblur_wid: my_oblur.__self__
+    odnz_wid: my_odnz.__self__
+    istab_wid: my_istab.__self__
+    ostab_wid: my_ostab.__self__
+    iequ_wid: my_iequ.__self__
+    oequ_wid: my_oequ.__self__
+    iflt_wid: my_iflt.__self__
+    oflt_wid: my_oflt.__self__
+    proc_wid: my_proc.__self__
+    dark_wid: my_dark.__self__
+    stack_wid: my_stack.__self__
+    reset_wid: my_reset.__self__
+    stackdisplay_wid: my_stackdisplay.__self__
+    play_wid: my_play.__self__
+    loop_wid: my_loop.__self__
+    screenshot_wid: my_screenshot.__self__
+    video_wid: my_video.__self__
+    imagesequence_wid: my_imagesequence.__self__
+    help_wid: my_help.__self__
+    helpbox_wid: my_helpbox.__self__
+    colors_wid: my_colors.__self__
+    flipx_wid: my_flipx.__self__
+    flipy_wid: my_flipy.__self__
+    FloatLayout:
+        BoxLayout:
+            id: my_tpan
+            pos_hint: {'x':0.1, 'top':1}
+            size_hint_x: 0.8
+            size_hint_y: 0.1
+            Spinner:
+                size_hint_x: 0.2
+                id: my_proc
+                text: 'PROC-OFF'
+                values: ('PROC-OFF', 'AVG', 'DIFF', 'CUMSUM')
+            ToggleButton:
+                size_hint_x: 0.2
+                id: my_dark
+                state: 'down'
+                text: 'DynDark'
+            Button:
+                size_hint_x: 0.2
+                id: my_reset
+                text: 'Reset'
+            Slider:
+                id: my_stack
+                min: 1
+                max: 255
+                step: 1
+                value: 128
+                on_value: my_stackdisplay.text = str(int(self.value))
+            Label:
+                size_hint_x: 0.1
+                id: my_stackdisplay
+                text: '128'
+        FloatLayout:
+            id: my_middle
+            pos_hint: {'top':1}
+            size_hint_y: 0.9
+            FloatLayout:
+                BoxLayout:
+                    id: my_outbox
+                    pos_hint: {'x':0.1, 'top':1}
+                    size_hint_x: 0.8
+                    ScatterLayout:
+                        do_rotation: False
+                        auto_bring_to_front: False
+                        Image:
+                            id: my_oimage
+                            allow_stretch: True
+                BoxLayout:
+                    id: my_inpbox
+                    pos_hint: {'x':0.1, 'top':1}
+                    size_hint_x: 0.2
+                    size_hint_y: 0.2
+                    ScatterLayout:
+                        do_rotation: False
+                        auto_bring_to_front: False
+                        Image:
+                            id: my_iimage
+                            allow_stretch: True
+            BoxLayout:
+                id: my_ipan
+                orientation: 'vertical'
+                size_hint_x: 0.1
+                pos_hint: {'right':0.1, 'top':1}
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.5
+                    ToggleButton:
+                        id: my_input
+                        text: 'Input'
+                        state: 'down'
+                    BoxLayout:
+                        ToggleButton:
+                            id: my_flipx
+                            text: 'X'
+                        ToggleButton:
+                            id: my_flipy
+                            text: 'Y'
+                    Spinner:
+                        id: my_iequ
+                        text: 'EQ-OFF'
+                        values: ('EQU-OFF', 'HIST', 'CLAHE')
+                    Spinner:
+                        id: my_iflt
+                        text: 'FLT-OFF'
+                        values: ('FLT-OFF')
+                    ToggleButton:
+                        id: my_istab
+                        text: 'Lock'
+                    ToggleButton:
+                        id: my_iblur
+                        text: 'Blur'
+                    ToggleButton:
+                        id: my_idnz
+                        text: 'Denoise'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.5
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Label:
+                            text: 'G'
+                        Label:
+                            text: 'O'
+                    BoxLayout:
+                        Slider:
+                            id: my_igain
+                            orientation: 'vertical'
+                            min: 1
+                            max: 10
+                            value: 1
+                            step: 0.1
+                            on_value: my_igaindisplay.text = str("%.2f" % round(my_igain.value,2))
+                        Slider:
+                            id: my_ioffset
+                            orientation: 'vertical'
+                            min: -127
+                            max: 127
+                            value: 0
+                            on_value: my_ioffsetdisplay.text = str("%.2f" % round(my_ioffset.value,2))
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Label:
+                            id: my_igaindisplay
+                            text: '1.00'
+                        Label:
+                            id: my_ioffsetdisplay
+                            text: '0.00'
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Button:
+                            id: my_iauto
+                            text: 'Auto'
+            BoxLayout:
+                id: my_opan
+                orientation: 'vertical'
+                pos_hint: {'right':1, 'top':1}
+                size_hint_x: 0.1
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.5
+                    ToggleButton:
+                        id: my_output
+                        text: 'Output'
+                        state: 'down'
+                    Button:
+                        id: my_colors
+                        text: 'GREY'
+                    Spinner:
+                        id: my_oequ
+                        text: 'EQ-OFF'
+                        values: ('EQU-OFF', 'HIST', 'CLAHE')
+                    Spinner:
+                        id: my_oflt
+                        text: 'FLT-OFF'
+                        values: ('FLT-OFF')
+                    ToggleButton:
+                        id: my_ostab
+                        text: 'Lock'
+                    ToggleButton:
+                        id: my_oblur
+                        text: 'Blur'
+                    ToggleButton:
+                        id: my_odnz
+                        text: 'Denoise'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.5
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Label:
+                            text: 'G'
+                        Label:
+                            text: 'O'
+                    BoxLayout:
+                        Slider:
+                            id: my_ogain
+                            orientation: 'vertical'
+                            min: 1
+                            max: 10
+                            value: 1
+                            step: 0.1
+                            on_value: my_ogaindisplay.text = str("%.2f" % round(my_ogain.value,2))
+                        Slider:
+                            id: my_ooffset
+                            orientation: 'vertical'
+                            min: -127
+                            max: 127
+                            value: 0
+                            on_value: my_ooffsetdisplay.text = str("%.2f" % round(my_ooffset.value,2))
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Label:
+                            id: my_ogaindisplay
+                            text: '1.00'
+                        Label:
+                            id: my_ooffsetdisplay
+                            text: '0.00'
+                    BoxLayout:
+                        size_hint_y: 0.1
+                        Button:
+                            id: my_oauto
+                            text: 'Auto'
+        BoxLayout:
+            id: my_bpan
+            pos_hint: {'x':0, 'top':0.1}
+            size_hint_x: 0.9
+            size_hint_y: 0.1
+            ToggleButton:
+                id: my_play
+                text: '>'
+                state: 'down'
+            ToggleButton:
+                id: my_loop
+                text: 'Loop'
+            Button:
+                id: my_screenshot
+                text: 'S'
+            ToggleButton:
+                id: my_video
+                text: 'RV'
+            ToggleButton:
+                id: my_imagesequence
+                text: 'RI'
+            ToggleButton:
+                id: my_vec
+                text: 'VEC'
+            ToggleButton:
+                id: my_help
+                text: '?'
+        BoxLayout:
+            id: my_helpbox
+            pos_hint: {'top':2.2}
+            size_hint_x: 1
+            size_hint_y: 0.9
+            ScatterLayout:
+                do_rotation: False
+                auto_bring_to_front: False
+                Image:
+                    source: 'doc/PyFSPro_dataflow.jpg'
+                    allow_stretch: True
+        ToggleButton:
+            id: my_osd
+            pos_hint: {'x':0.9}
+            size_hint_x: 0.1
+            size_hint_y: 0.1
+            state: 'down'
+            text: 'OSD'
