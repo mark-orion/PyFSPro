@@ -28,7 +28,13 @@ import filters as flt
 
 # scikit-video (scikit-video.org) is used for recording because of OpenCV
 # Linux bug
-from skvideo.io import FFmpegWriter as VideoWriter
+try:
+    from skvideo.io import FFmpegWriter as VideoWriter
+    skvdetected = True
+except:
+    skvdetected = False
+
+skvdetected = False
 
 
 class MyScreen(BoxLayout):
@@ -135,7 +141,7 @@ class PyFSProApp(App):
             self.cnf.rootwidget.stack_wid.value = int(values.stack_size)
         if values.color_mode != self.cnf.rootwidget.colors_wid.text:
             self.cnf.rootwidget.colors_wid.text = values.color_mode
-        if values.output_video != 'none':
+        if values.output_video != 'none' and skvdetected:
             self.cnf.video_dst = values.output_video
             self.cnf.rootwidget.video_wid.state = 'down'
         if values.output_images != 'none':
@@ -448,7 +454,10 @@ class PyFSProApp(App):
         self.cnf.rootwidget.loop_wid.bind(state=self.loop_callback)
         self.cnf.rootwidget.screenshot_wid.bind(
             on_release=self.screenshot_callback)
-        self.cnf.rootwidget.video_wid.bind(state=self.video_callback)
+        if skvdetected:
+            self.cnf.rootwidget.video_wid.bind(state=self.video_callback)
+        else:
+            self.cnf.rootwidget.video_wid.disabled = True
         self.cnf.rootwidget.imagesequence_wid.bind(
             state=self.imagesequence_callback)
         self.cnf.rootwidget.help_wid.bind(state=self.help_callback)

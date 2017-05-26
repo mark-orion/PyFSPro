@@ -40,12 +40,16 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * Kivy (tested with version 1.9.1)
 * Numpy (tested with version 1.11)
 * OpenCV with Python bindings (tested with version 2.4.9)
-* [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 On Debian / Ubuntu based systems the requirements can be installed with the following commands:  
 sudo apt-get install python-numpy python-opencv  
+Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions  
+
+## Optional for video recording
+* It is best practice to use image sequence recording instead of scikit-video to create uncompressed high resolution video.
+* [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 sudo pip install sk-video  
 
-Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions
+
 
 ## Usage
 Installation: Clone or download PyFSPro  
