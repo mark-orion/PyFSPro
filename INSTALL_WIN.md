@@ -20,7 +20,7 @@ Variable: OPENCV_DIR  Value: C:\opencv\build\x64\vc12
 * Open Anaconda Prompt and enter the following commands:
 * Check you have the latest versions of pip and wheel  
 python -m pip install --upgrade pip wheel setuptools
-* Install the dependencies
+* Install the dependencies  
 python -m pip install docutils pygments pypiwin32 kivy.deps.sdl2 kivy.deps.glew kivy.deps.gstreamer
 * Install Kivy  
 python -m pip install kivy
