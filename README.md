@@ -36,6 +36,7 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * Pseudo Color
 
 ## Requirements
+* Please refer to INSTALL.win for Windows installation instructions.
 * Tested with Python 2.7, not ported to Python 3 yet!
 * Kivy (tested with version 1.9.1)
 * Numpy (tested with version 1.11)
