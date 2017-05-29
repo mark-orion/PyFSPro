@@ -35,10 +35,13 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 ## Requirements
 * Tested with Python 2.7, not ported to Python 3 yet!
 * Numpy (tested with version 1.11)
-* OpenCV with Python bindings (tested with version 2.4.9)
-* [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
+* OpenCV with Python bindings (tested with version 2.4.9)  
 On Debian / Ubuntu based systems the requirements can be installed with the following commands:  
-sudo apt-get install python-numpy python-opencv  
+sudo apt-get install python-numpy python-opencv
+
+## Optional for video recording
+* For high resolution video it is best practice to use the OpenCV based image sequence recording instead of scikit-video.
+* [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 sudo pip install sk-video
 
 ## Usage
@@ -95,7 +98,7 @@ lower/UPPER case = apply to input/OUTPUT processing chain.
 * R    Reset Gains and Offsets
 * s    Save configuration
 * S    Load saved configuration
-* v    Toggle video recording
+* v    Toggle video recording (requires scikit-video)
 * V    Toggle image sequence recording
 * ?    Cycle Schlieren pattern types
 * <>   Decrease / Increase Schlieren pattern size

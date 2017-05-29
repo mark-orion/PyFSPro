@@ -34,8 +34,6 @@ try:
 except:
     skvdetected = False
 
-skvdetected = False
-
 
 class MyScreen(BoxLayout):
     iimage_wid = ObjectProperty()

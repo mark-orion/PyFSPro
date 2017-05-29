@@ -19,8 +19,13 @@ import videosource as vs
 import framestacker as fs
 import filters as flt
 
-#scikit-video (scikit-video.org) is used for recording because of OpenCV Linux bug
-from skvideo.io import FFmpegWriter as VideoWriter
+# scikit-video (scikit-video.org) is used for recording because of OpenCV
+# Linux bug
+try:
+    from skvideo.io import FFmpegWriter as VideoWriter
+    skvdetected = True
+except:
+    skvdetected = False
 
 cnf = config.Settings()
 
@@ -30,7 +35,7 @@ def nothing(par):
 def signal_handler(signal, frame):
     imageinput.exit_thread = True
     sys.exit(0)
-    
+
 def gettime():
     timestring = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     return timestring
@@ -158,14 +163,14 @@ if __name__ == '__main__':
 
     # command line parser
     parser = argparse.ArgumentParser(description='Python Frame Sequence Processor', add_help=False)
-    
+
     # check if we load a config file
     parser.add_argument('-c', '--config_file', default='none',
                         help='Load Configuration from file')
     options, args = parser.parse_known_args()
     if options.config_file != 'none':
         cnf.read_config(options.config_file)
-    
+
     # then parse all other arguments
     parser.add_argument('-h', '--help', action='store_true',
                         help='Show Help')
@@ -215,11 +220,11 @@ if __name__ == '__main__':
     parser.add_argument('-oi', '--output_stabilizer', action='store_true',
                         help='Enable output image stabilizer')
     parser.add_argument('-on', '--output_denoise', default='none',
-                        help='Output Denoise Strength')   
+                        help='Output Denoise Strength')
     parser.add_argument('-om', '--output_mode', default=cnf.mode_out,
                         help='Display Mode Output Window')
-    parser.add_argument('-ov', '--output_video', default='none',
-                        help='Save output as video (Path or Prefix).')
+    if skvdetected:
+        parser.add_argument('-ov', '--output_video', default='none', help='Save output as video (Path or Prefix).')
     parser.add_argument('-os', '--output_images', default='none',
                         help='Save output as image sequence (Path or Prefix).')
     parser.add_argument('-pm', '--processing_mode', default=cnf.mode_prc,
@@ -235,11 +240,11 @@ if __name__ == '__main__':
     parser.add_argument('-wh', '--window_height', default=cnf.window_height,
                         help='Height of displayed Windows')
     args = parser.parse_args()
-    
+
     # kludge to show full help although we are parsing twice.
     if args.help:
         parser.print_help()
-        sys.exit(0) 
+        sys.exit(0)
 
     # process and sanitize command line arguments
     if args.input_denoise != 'none':
@@ -309,11 +314,12 @@ if __name__ == '__main__':
         cnf.pattern_size = int(args.pattern_size)
         cnf.pattern = draw_pattern()
         cv2.imshow('Schlieren Background', cnf.pattern)
-    if args.output_video != 'none':
-        cnf.recordv = True
-        cnf.video_dst = args.output_video
-        video = VideoWriter(cnf.video_dst + gettime() + '.avi')
-        cnf.novfile = False
+    if skvdetected == True:
+        if args.output_video != 'none':
+            cnf.recordv = True
+            cnf.video_dst = args.output_video
+            video = VideoWriter(cnf.video_dst + gettime() + '.avi')
+            cnf.novfile = False
     if args.output_images != 'none':
         cnf.recordi = True
         cnf.image_dst = args.output_images
@@ -339,13 +345,13 @@ if __name__ == '__main__':
         cnf.flt_inp_strength = float(args.input_filter_strength)
     if args.output_filter_strength != 'none':
         cnf.flt_out_strength = float(args.output_filter_strength)
-    
+
     # prepare stack
     imagestack = fs.FrameStack(cnf.numframes, cnf.video_width, cnf.video_height)
-   
+
     # apply loaded settings to stack
     apply_settings()
-    
+
     # create a CLAHE object (Contrast Limited Adaptive Histogram Equalization)
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4, 4))
 
@@ -366,10 +372,10 @@ if __name__ == '__main__':
     vec_zoom_2 = cnf.vec_zoom / 2
     background = np.full((cnf.video_height, cnf.video_width, 3),
                          imagestack.default_value, np.uint8)
-    
+
     # keep image aspect ratio of video input
     image_height = int(cnf.video_height / cnf.video_width * cnf.window_width)
-    
+
     # prepare image stabilizer
     inp = imageinput.grab_frame()
     inp = cv2.cvtColor(inp, cv2.COLOR_BGR2GRAY)
@@ -482,7 +488,7 @@ if __name__ == '__main__':
             cv2.circle(out, (x_avg, y_avg), 20, cnf.red,
                        thickness=cnf.osd_txtline, lineType=cv2.CV_AA)
         cv2.imshow('Processed Output', out)
-        
+
         # record video or image sequence
         if cnf.recordv:
             video.writeFrame(out)
@@ -574,7 +580,7 @@ if __name__ == '__main__':
                 cnf.write_config(cnf.cfgfilename)
             elif asckey == 83: # S load settings
                 cnf.read_config(cnf.cfgfilename)
-            elif asckey == 118: # v toggle video recording
+            elif asckey == 118 and skvdetected == True: # v toggle video recording
                 cnf.recordv = not cnf.recordv
                 if cnf.recordv:
                     if cnf.novfile:

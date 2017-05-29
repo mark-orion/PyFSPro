@@ -45,11 +45,9 @@ sudo apt-get install python-numpy python-opencv
 Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions  
 
 ## Optional for video recording
-* It is best practice to use image sequence recording instead of scikit-video to create uncompressed high resolution video.
+* For high resolution video it is best practice to use the OpenCV based image sequence recording instead of scikit-video.
 * [Scikit-Video](http://www.scikit-video.org) This library is needed as a workaround for a video recording bug in Linux OpenCV 2.4.  
 sudo pip install sk-video  
-
-
 
 ## Usage
 Installation: Clone or download PyFSPro  
