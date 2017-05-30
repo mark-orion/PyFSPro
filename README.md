@@ -15,6 +15,7 @@ The 'doc' folder contains the flow diagram and pattern files that can be used in
 * High accuracy processing core using floating point maths for image processing.
 * Input from Camera, Image sequence or Video file.
 * Output to Screen, Image sequence or Video file.
+* Input channel can be greyscale or extracted from RGB, HSV or YCrCb color space.
 * Input and Output processing chains with basic image enhancement functions.
 * Vectorscope for the visualization of small changes in video stream.
 * Built-in pattern generator for Schlieren Videography.
@@ -76,6 +77,7 @@ The GUI is divided in five main sections:
 * Blur, Denoise - toggle blurring and denoising.
 * G, O, Auto - the sliders set Gain and Offset (contrast, brightness). Auto finds the optimum values for best dynamic resolution.
 * > - (enabled by default) run / pause processing engine.
+* BW - choose channel from various color spaces (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb)
 * Loop - loop inpu video if loaded from file.
 * S - save current output frame as single image.
 * RV - Record Video saves the output stream to AVI video.

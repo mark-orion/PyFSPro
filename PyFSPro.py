@@ -81,7 +81,7 @@ class MyScreen(BoxLayout):
     colors_wid = ObjectProperty()
     flipx_wid = ObjectProperty()
     flipy_wid = ObjectProperty()
-
+    ichan_wid = ObjectProperty()
 
 class PyFSProApp(App):
 
@@ -145,6 +145,8 @@ class PyFSProApp(App):
         if values.output_images != 'none':
             self.cnf.image_dst = values.output_images
             self.cnf.rootwidget.imagesequence_wid.state = 'down'
+        if values.input_channel != self.cnf.rootwidget.ichan_wid.text:
+            self.cnf.rootwidget.ichan_wid.text = values.input_channel
 
     def osd_callback(self, instance, value):
         if value == 'normal':
@@ -381,6 +383,29 @@ class PyFSProApp(App):
             self.cnf.flip_y = False
         self.apply_settings()
 
+    def ichan_callback(self, instance, value):
+        if value == 'R':
+            self.cnf.input_channel = 1
+        elif value == 'G':
+            self.cnf.input_channel = 2
+        elif value == 'B':
+            self.cnf.input_channel = 3
+        elif value == 'H':
+            self.cnf.input_channel = 4
+        elif value == 'S':
+            self.cnf.input_channel = 5
+        elif value == 'V':
+            self.cnf.input_channel = 6
+        elif value == 'Y':
+            self.cnf.input_channel = 7
+        elif value == 'Cr':
+            self.cnf.input_channel = 8
+        elif value == 'Cb':
+            self.cnf.input_channel = 9
+        else:
+            self.cnf.input_channel = 0
+
+
     def img2tex(self, img):
         buf1 = cv2.flip(img, 0)
         buf = buf1.tostring()
@@ -450,6 +475,7 @@ class PyFSProApp(App):
         self.cnf.rootwidget.reset_wid.bind(on_release=self.reset_callback)
         self.cnf.rootwidget.play_wid.bind(state=self.play_callback)
         self.cnf.rootwidget.loop_wid.bind(state=self.loop_callback)
+        self.cnf.rootwidget.ichan_wid.bind(text=self.ichan_callback)
         self.cnf.rootwidget.screenshot_wid.bind(
             on_release=self.screenshot_callback)
         if skvdetected:
@@ -468,6 +494,8 @@ class PyFSProApp(App):
             description='Python Frame Sequence Processor', add_help=True)
         parser.add_argument('-c', '--config_file', default='none',
                             help='Load Configuration from file')
+        parser.add_argument('-ic', '--input_channel', default=self.cnf.rootwidget.ichan_wid.text,
+                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb')
         parser.add_argument('-is', '--input_source', default=self.cnf.video_src,
                             help='Input Source, filename or camera index')
         parser.add_argument('-iw', '--input_width', default=self.cnf.video_width,
@@ -517,7 +545,7 @@ class PyFSProApp(App):
         parser.add_argument('-os', '--output_images', default='none',
                             help='Save output as image sequence (Path or Prefix).')
         parser.add_argument('-pm', '--processing_mode', default=self.cnf.rootwidget.proc_wid.text,
-                            help='Set Processing Mode')
+                            help='Set Processing Mode: AVG, DIFF, CUMSUM')
         parser.add_argument('-pz', '--stack_size', default=self.cnf.rootwidget.stack_wid.value,
                             help='Image Stacking (No. of frames to stack)')
 
@@ -571,7 +599,26 @@ class PyFSProApp(App):
     # main video processing loop
     def update(self, dt):
         self.inp = self.imageinput.grab_frame()
-        self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
+        if self.cnf.input_channel == 0:
+            self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
+        elif self.cnf.input_channel == 1:
+            b,g,self.inp = cv2.split(self.inp)
+        elif self.cnf.input_channel == 2:
+            b,self.inp,r = cv2.split(self.inp)
+        elif self.cnf.input_channel == 3:
+            self.inp,g,r = cv2.split(self.inp)
+        elif self.cnf.input_channel == 4:
+            self.inp,s,v = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+        elif self.cnf.input_channel == 5:
+            h,self.inp,v = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+        elif self.cnf.input_channel == 6:
+            h,s,self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+        elif self.cnf.input_channel == 7:
+            self.inp,cr,cb = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+        elif self.cnf.input_channel == 8:
+            y,self.inp,cb = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+        elif self.cnf.input_channel == 9:
+            y,cr,self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
         if self.cnf.dnz_inp:
             cv2.fastNlMeansDenoising(
                 self.inp, self.inp, self.cnf.dnz_inp_str, 7, 21)

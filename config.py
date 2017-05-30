@@ -21,6 +21,7 @@ class Settings:
         self.helpfile = 'doc/PyFSPro_dataflow.jpg'
         self.numframes = 255  # No. of frames in stack
         self.color_mode = -1  # Greyscale output
+        self.input_channel = 0  # Greyscale input
         self.video_src = 0  # Default camera
         self.video_width = 1024
         self.video_height = 768

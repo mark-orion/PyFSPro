@@ -44,6 +44,8 @@
     colors_wid: my_colors.__self__
     flipx_wid: my_flipx.__self__
     flipy_wid: my_flipy.__self__
+    ichan_wid: my_ichan.__self__
+
     FloatLayout:
         BoxLayout:
             id: my_tpan
@@ -254,6 +256,10 @@
                 id: my_play
                 text: '>'
                 state: 'down'
+            Spinner:
+                id: my_ichan
+                text: 'BW'
+                values: ('BW', 'R', 'G', 'B', 'H', 'S', 'V', 'Y', 'Cr', 'Cb')
             ToggleButton:
                 id: my_loop
                 text: 'Loop'
