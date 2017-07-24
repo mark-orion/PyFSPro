@@ -16,6 +16,7 @@ class Settings:
         self.Config.add_section('Input')
         self.Config.add_section('Processor')
         self.Config.add_section('Output')
+
         # default values
         self.cfgfilename = 'default.conf'
         self.helpfile = 'doc/PyFSPro_dataflow.jpg'
@@ -29,6 +30,13 @@ class Settings:
         self.show_out = True
         self.show_vec = False
         self.show_help = False
+        self.stack_status = False
+
+        # timing settings for processing and display threads
+        self.proc_thread_run = True
+        self.proc_frames = True
+        self.proc_fps = 1.0 / 30.0
+        self.output_fps = 1.0 / 25.0
 
         # settings for video and image sequence recording
         self.recordi = False

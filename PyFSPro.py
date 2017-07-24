@@ -8,6 +8,8 @@ import numpy as np
 import cv2
 import cv2.cv as cv
 
+from threading import Thread, Event
+
 # kivy imports
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -84,6 +86,11 @@ class MyScreen(BoxLayout):
     ichan_wid = ObjectProperty()
 
 class PyFSProApp(App):
+
+    def on_stop(self):
+        # signal all threads to stop
+        self.cnf.proc_thread_run = False
+        self.cnf.procthread.join()
 
     def apply_settings(self):
         self.cnf.imagestack.blr_inp = self.cnf.blr_inp
@@ -328,9 +335,9 @@ class PyFSProApp(App):
 
     def play_callback(self, instance, value):
         if value == 'down':
-            Clock.schedule_interval(self.update, 1.0 / 33.0)
+            self.cnf.proc_frames = True
         else:
-            Clock.unschedule(self.update)
+            self.cnf.proc_frames = False
 
     def loop_callback(self, instance, value):
         if value == 'down':
@@ -593,11 +600,32 @@ class PyFSProApp(App):
         self.dsp_old = self.inp.copy()
         self.dsp_raw = self.inp.copy()
 
-        Clock.schedule_interval(self.update, 1.0 / 33.0)
+        Clock.schedule_interval(self.update_output, self.cnf.output_fps)
+        self.cnf.procthread = Thread(target=self.process_thread)
+        self.cnf.procthread.start()
         return self.cnf.rootwidget
 
-    # main video processing loop
-    def update(self, dt):
+    def update_output(self, dt):
+        #self.process_frame()
+        self.cnf.rootwidget.oimage_wid.texture = self.img2tex(self.showoimage)
+        if self.cnf.show_inp == True:
+            self.showiimage = cv2.cvtColor(np.uint8(self.cnf.imagestack.inp_frame),
+                                           cv2.COLOR_GRAY2BGR)
+            self.cnf.rootwidget.iimage_wid.texture = self.img2tex(
+                self.showiimage)
+        if self.cnf.stack_status:
+            self.cnf.rootwidget.stackdisplay_wid.color = (1, 0, 0, 1)
+        else:
+            self.cnf.rootwidget.stackdisplay_wid.color = (0, 1, 0, 1)
+
+    def process_thread(self):
+        while self.cnf.proc_thread_run:
+            if self.cnf.proc_frames:
+                self.process_frame()
+            time.sleep(self.cnf.proc_fps)
+
+    # main video processing function
+    def process_frame(self):
         self.inp = self.imageinput.grab_frame()
         if self.cnf.input_channel == 0:
             self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
@@ -635,10 +663,7 @@ class PyFSProApp(App):
                 self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
                                           self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
         self.inp_old = self.inp
-        if self.cnf.imagestack.addFrame(self.inp):
-            self.cnf.rootwidget.stackdisplay_wid.color = (1, 0, 0, 1)
-        else:
-            self.cnf.rootwidget.stackdisplay_wid.color = (0, 1, 0, 1)
+        self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
         if self.cnf.mode_prc == 0:
             self.dsp = self.cnf.imagestack.getINP()
         elif self.cnf.mode_prc == 1:
@@ -669,7 +694,6 @@ class PyFSProApp(App):
             self.cnf.out = cv2.applyColorMap(self.dsp, self.cnf.color_mode)
         else:
             self.cnf.out = cv2.cvtColor(self.dsp, cv2.COLOR_GRAY2BGR)
-        # display output image
         if self.cnf.show_out == True:
             self.showoimage = self.cnf.out
         if self.cnf.show_vec:
@@ -683,15 +707,6 @@ class PyFSProApp(App):
                      thickness=self.cnf.osd_txtline, lineType=cv2.CV_AA)
             cv2.circle(self.showoimage, (self.x_avg, self.y_avg), 20, self.cnf.red,
                        thickness=self.cnf.osd_txtline, lineType=cv2.CV_AA)
-        self.cnf.rootwidget.oimage_wid.texture = self.img2tex(self.showoimage)
-        # create and show input image
-        if self.cnf.show_inp == True:
-            self.showiimage = cv2.cvtColor(np.uint8(self.cnf.imagestack.inp_frame),
-                                           cv2.COLOR_GRAY2BGR)
-            height, width, channels = self.cnf.out.shape
-            self.showiimage = cv2.resize(self.showiimage, (width, height))
-            self.cnf.rootwidget.iimage_wid.texture = self.img2tex(
-                self.showiimage)
 
         # record video or image sequence
         if self.cnf.recordv:
