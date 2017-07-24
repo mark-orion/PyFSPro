@@ -531,6 +531,8 @@ class PyFSProApp(App):
                             help='Flip around X axis')
         parser.add_argument('-fy', '--flip_y', action='store_true',
                             help='Flip around Y axis')
+        parser.add_argument('-fps', '--frames_second', default=1.0 / self.cnf.proc_fps,
+                            help='Set processing frame rate')
         parser.add_argument('-ob', '--output_blur', action='store_true',
                             help='Blur Output')
         parser.add_argument('-oc', '--color_mode', default=self.cnf.rootwidget.colors_wid.text,
@@ -561,6 +563,7 @@ class PyFSProApp(App):
             self.cnf.video_src = int(self.args.input_source)
         else:
             self.cnf.video_src = self.args.input_source
+        self.cnf.proc_fps = 1.0 / float(self.args.frames_second)
 
         # initialize video input
         self.cnf.video_width = self.args.input_width
