@@ -26,7 +26,7 @@ except:
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
                  'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
-                 'frame_width', 'frame_height']
+                 'frame_width', 'frame_height', 'loop']
 
     def __init__(self, video_src, input_width, input_height, cnf):
         if raspi is False:
@@ -37,6 +37,7 @@ class FrameInputPi(object):
         self.frame_width = self.input_width
         self.frame_height = self.input_height
         self.thread = None
+        self.loop = False
         self.video_frame = None
         self.exit_thread = False
         if self.thread is None:
