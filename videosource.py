@@ -25,7 +25,8 @@ except:
 
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
-                 'video_frame', 'exit_thread', 'cam', 'stream', 'foo']
+                 'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
+                 'frame_width', 'frame_height']
 
     def __init__(self, video_src, input_width, input_height, cnf):
         if raspi is False:
@@ -33,6 +34,8 @@ class FrameInputPi(object):
             sys.exit(0)
         self.input_width = int(input_width)
         self.input_height = int(input_height)
+        self.frame_width = self.input_width
+        self.frame_height = self.input_height
         self.thread = None
         self.video_frame = None
         self.exit_thread = False
@@ -53,6 +56,7 @@ class FrameInputPi(object):
             # let camera warm up
             self.cam.start_preview()
             time.sleep(2)
+            self.cam.stop_preview()
             self.stream = picamera.array.PiRGBArray(self.cam)
             for foo in self.cam.capture_continuous(self.stream, 'bgr',
                                                    use_video_port=True):
