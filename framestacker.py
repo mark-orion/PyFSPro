@@ -11,8 +11,20 @@ This is the FrameStack class that does all the magic.
 from __future__ import division, print_function
 import numpy as np
 
-class FrameStack:
-    def __init__(self, stacksize, width, height):
+
+class FrameStack(object):
+    __slots__ = ['dyn_dark', 'filling_stack', 'flip_x', 'flip_y', 'blr_inp', 'blr_out',
+                 'max_value', 'default_value', 'min_value', 'index', 'gain_inp', 'gain_out',
+                 'offset_inp', 'offset_out', 'stacksize', 'stackrange', 'width', 'height',
+                 'center_x', 'center_y', 'upper_offset', 'lower_offset', 'kernel_size',
+                 'ulimit', 'llimit', 'pixelvalue', 'kernel_value', 'raw_inp', 'frame',
+                 'inp_frame', 'sum_frames', 'frame_stack', 'avg', 'sqd', 'sum_sqd', 'sqd_stack',
+                 'dark_frame', 'var', 'sd', 'z', 'cumsum', 'full_avg', 'left_avg', 'right_avg',
+                 'upper_avg', 'lower_avg', 'x_avg', 'y_avg', 'raw_out', 'float_out', 'r', 'c',
+                 'max_inp', 'min_inp', 'max_out', 'min_out', 'kernel', 'i', 'proc_out',
+                 'initframe']
+
+    def __init__(self, stacksize, stackrange, width, height):
         self.dyn_dark = True
         self.filling_stack = True
         self.flip_x = False
@@ -28,7 +40,7 @@ class FrameStack:
         self.offset_inp = 0.0
         self.offset_out = 0.0
         self.stacksize = stacksize
-        self.stackrange = self.stacksize
+        self.stackrange = stackrange
         self.width = int(width)
         self.height = int(height)
         self.center_x = int(self.width / 2)
@@ -62,13 +74,16 @@ class FrameStack:
             self.raw_inp = np.flipud(self.raw_inp)
         if self.flip_y:
             self.raw_inp = np.fliplr(self.raw_inp)
-        self.inp_frame = np.clip(abs(self.raw_inp + self.offset_inp) * self.gain_inp, 0, 255)
+        self.frame = np.clip(
+            abs(self.raw_inp + self.offset_inp) * self.gain_inp, 0, 255)
         if self.blr_inp:
             for self.r in range(self.height):
-                self.inp_frame[self.r, :] = np.convolve(self.inp_frame[self.r, :], self.kernel, 'same')
+                self.frame[self.r, :] = np.convolve(
+                    self.frame[self.r, :], self.kernel, 'same')
             for self.c in range(self.width):
-                self.inp_frame[:, self.c] = np.convolve(self.inp_frame[:, self.c], self.kernel, 'same')
-        self.frame = np.copy(self.inp_frame)
+                self.frame[:, self.c] = np.convolve(
+                    self.frame[:, self.c], self.kernel, 'same')
+        self.inp_frame = np.copy(self.frame)
         self.sum_frames = (self.sum_frames -
                            self.frame_stack[self.index] + self.frame)
         self.frame_stack[self.index] = self.frame
@@ -101,25 +116,24 @@ class FrameStack:
         return self.postProcess(np.sqrt(self.var))
 
     def getDIFF(self):
-        return self.postProcess(abs(self.frame - self.dark_frame))
+        return self.postProcess(abs(self.inp_frame - self.dark_frame))
 
     def getCUMSUM(self):
         self.cumsum = self.cumsum + self.z
         return self.postProcess(self.cumsum)
 
-    def getVECTOR(self, vec_zoom):
-        self.vec_zoom = vec_zoom
-        self.full_avg = np.nanmean(self.proc_out)
-        self.left_avg = np.nanmean(self.proc_out[0:self.height,
-                                                 0:self.center_x])
-        self.right_avg = np.nanmean(self.proc_out[0:self.height,
-                                                  self.center_x:self.width])
-        self.upper_avg = np.nanmean(self.proc_out[0:self.center_y,
-                                                  0:self.width])
-        self.lower_avg = np.nanmean(self.proc_out[self.center_y:self.height,
-                                                  0:self.width])
-        self.x_avg = (self.right_avg - self.left_avg) * self.vec_zoom * self.width + self.center_x
-        self.y_avg = (self.lower_avg - self.upper_avg) * self.vec_zoom * self.height + self.center_y
+    def getVECTOR(self, img):
+        self.full_avg = np.nanmean(img)
+        self.left_avg = np.nanmean(img[0:self.height,
+                                       0:self.center_x])
+        self.right_avg = np.nanmean(img[0:self.height,
+                                        self.center_x:self.width])
+        self.upper_avg = np.nanmean(img[0:self.center_y,
+                                        0:self.width])
+        self.lower_avg = np.nanmean(img[self.center_y:self.height,
+                                        0:self.width])
+        self.x_avg = self.right_avg - self.left_avg
+        self.y_avg = self.upper_avg - self.lower_avg
         return self.full_avg, self.x_avg, self.y_avg
 
     def resetCUMSUM(self):
@@ -136,13 +150,16 @@ class FrameStack:
     def postProcess(self, raw_out):
         self.raw_out = raw_out
         self.proc_out = np.clip((self.raw_out + self.offset_out) *
-                                      self.gain_out, self.min_value,
-                                      self.max_value)
+                                self.gain_out, self.min_value,
+                                self.max_value)
         if self.blr_out:
             for self.r in range(self.height):
-                self.proc_out[self.r, :] = np.convolve(self.proc_out[self.r, :], self.kernel, 'same')
+                self.proc_out[self.r, :] = np.convolve(
+                    self.proc_out[self.r, :], self.kernel, 'same')
             for self.c in range(self.width):
-                self.proc_out[:, self.c] = np.convolve(self.proc_out[:, self.c], self.kernel, 'same')
+                self.proc_out[:, self.c] = np.convolve(
+                    self.proc_out[:, self.c], self.kernel, 'same')
+        self.float_out = self.proc_out
         return np.uint8(self.proc_out)
 
     def autoInpGain(self):
@@ -165,26 +182,20 @@ class FrameStack:
             self.stackrange = self.stacksize
         if self.stackrange < 1:
             self.stackrange = 1
-        self.dark_frame = self.emptyFrame(0, self.upper_offset,
-                                          self.lower_offset)
-        self.inp_frame = self.emptyFrame(0, self.upper_offset,
-                                         self.lower_offset)
-        self.raw_inp = self.emptyFrame(0, self.upper_offset,
-                                       self.lower_offset)
-        self.raw_out = self.emptyFrame(0, self.upper_offset,
-                                       self.lower_offset)
-        self.cumsum = self.emptyFrame(self.default_value, self.upper_offset,
-                                      self.lower_offset)
-        self.sum_frames = self.emptyFrame(0, self.upper_offset,
-                                          self.lower_offset)
-        self.sum_sqd = self.emptyFrame(0, self.upper_offset,
-                                       self.lower_offset)
-        self.z = self.emptyFrame(0, self.upper_offset, self.lower_offset)
-        self.frame_stack = [self.emptyFrame(0, self.upper_offset,
-                                            self.lower_offset)
-                            for self.i in range(self.stacksize)]
-        self.sqd_stack = [self.emptyFrame(0, self.upper_offset,
-                                          self.lower_offset)
-                          for self.i in range(self.stacksize)]
+        self.initframe = self.emptyFrame(0, self.upper_offset, self.lower_offset)
+        self.dark_frame = self.initframe
+        self.frame = self.initframe
+        self.inp_frame = self.initframe
+        self.raw_inp = self.initframe
+        self.raw_out = self.initframe
+        self.cumsum = self.initframe
+        self.sum_frames = self.initframe
+        self.sum_sqd = self.initframe
+        self.z = self.initframe
+        self.frame_stack = []
+        self.sqd_stack = []
+        for self.i in range(self.stackrange):
+            self.frame_stack.append(self.initframe)
+            self.sqd_stack.append(self.initframe)
         self.index = 0
         self.filling_stack = True

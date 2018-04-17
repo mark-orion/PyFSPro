@@ -1,100 +1,89 @@
 
 <MyScreen>:
-    oimage_wid: my_oimage.__self__
-    iimage_wid: my_iimage.__self__
-    osd_wid: my_osd.__self__
-    vec_wid: my_vec.__self__
-    ipan_wid: my_ipan.__self__
-    opan_wid: my_opan.__self__
-    mid_wid: my_middle.__self__
-    inp_wid: my_input.__self__
-    out_wid: my_output.__self__
-    inpb_wid: my_inpbox.__self__
-    outb_wid: my_outbox.__self__
-    bpan_wid: my_bpan.__self__
-    tpan_wid: my_tpan.__self__
-    igain_wid: my_igain.__self__
-    ioffset_wid: my_ioffset.__self__
-    iauto_wid: my_iauto.__self__
-    ogain_wid: my_ogain.__self__
-    ooffset_wid: my_ooffset.__self__
-    oauto_wid: my_oauto.__self__
-    iblur_wid: my_iblur.__self__
-    idnz_wid: my_idnz.__self__
-    oblur_wid: my_oblur.__self__
-    odnz_wid: my_odnz.__self__
-    istab_wid: my_istab.__self__
-    ostab_wid: my_ostab.__self__
-    iequ_wid: my_iequ.__self__
-    oequ_wid: my_oequ.__self__
-    iflt_wid: my_iflt.__self__
-    oflt_wid: my_oflt.__self__
-    proc_wid: my_proc.__self__
-    dark_wid: my_dark.__self__
-    stack_wid: my_stack.__self__
-    reset_wid: my_reset.__self__
-    stackdisplay_wid: my_stackdisplay.__self__
-    play_wid: my_play.__self__
-    loop_wid: my_loop.__self__
-    screenshot_wid: my_screenshot.__self__
-    video_wid: my_video.__self__
-    imagesequence_wid: my_imagesequence.__self__
-    help_wid: my_help.__self__
-    helpbox_wid: my_helpbox.__self__
-    colors_wid: my_colors.__self__
-    flipx_wid: my_flipx.__self__
-    flipy_wid: my_flipy.__self__
-    ichan_wid: my_ichan.__self__
+    oimage_wid: my_oimage
+    iimage_wid: my_iimage
+    osd_wid: my_osd
+    vec_wid: my_vec
+    ipan_wid: my_ipan
+    opan_wid: my_opan
+    mid_wid: my_middle
+    inp_wid: my_input
+    out_wid: my_output
+    inpb_wid: my_inpbox
+    outb_wid: my_outbox
+    bpan_wid: my_bpan
+    tpan_wid: my_tpan
+    igain_wid: my_igain
+    ioffset_wid: my_ioffset
+    iauto_wid: my_iauto
+    ogain_wid: my_ogain
+    ooffset_wid: my_ooffset
+    oauto_wid: my_oauto
+    iblur_wid: my_iblur
+    idnz_wid: my_idnz
+    oblur_wid: my_oblur
+    odnz_wid: my_odnz
+    iequ_wid: my_iequ
+    oequ_wid: my_oequ
+    iflt_wid: my_iflt
+    oflt_wid: my_oflt
+    proc_wid: my_proc
+    dark_wid: my_dark
+    stack_wid: my_stack
+    reset_wid: my_reset
+    stackdisplay_wid: my_stackdisplay
+    dout_wid: my_dout
+    inifile_wid: my_inifile
+    actuator_wid: my_actuator
+    recorder_wid: my_recorder
+    override_wid: my_override
+    colors_wid: my_colors
+    flipx_wid: my_flipx
+    flipy_wid: my_flipy
+    ichan_wid: my_ichan
+    indicator_wid: my_indicator
+    zindicator_wid: my_zindicator
+    marker_wid: my_marker
+    indzoom_wid: my_indzoom
+    indzoomvalue_wid: my_indzoomvalue
+    indzoombox_wid: my_indzoombox
+    zero_wid: my_zero
+    ihist_wid: my_ihist
+    ohist_wid: my_ohist
+    ostab_wid: my_ostab
+    istab_wid: my_istab
+    playmode_wid: my_playmode
 
     FloatLayout:
-        BoxLayout:
-            id: my_tpan
-            pos_hint: {'x':0.1, 'top':1}
-            size_hint_x: 0.8
-            size_hint_y: 0.1
-            Spinner:
-                size_hint_x: 0.2
-                id: my_proc
-                text: 'PROC-OFF'
-                values: ('PROC-OFF', 'AVG', 'DIFF', 'CUMSUM')
-            ToggleButton:
-                size_hint_x: 0.2
-                id: my_dark
-                state: 'down'
-                text: 'DynDark'
-            Button:
-                size_hint_x: 0.2
-                id: my_reset
-                text: 'Reset'
-            Slider:
-                id: my_stack
-                min: 1
-                max: 255
-                step: 1
-                value: 128
-                on_value: my_stackdisplay.text = str(int(self.value))
-            Label:
-                size_hint_x: 0.1
-                id: my_stackdisplay
-                text: '128'
         FloatLayout:
             id: my_middle
-            pos_hint: {'top':1}
-            size_hint_y: 0.9
             FloatLayout:
                 BoxLayout:
                     id: my_outbox
-                    pos_hint: {'x':0.1, 'top':1}
+                    pos_hint: {'x':0.1}
                     size_hint_x: 0.8
                     ScatterLayout:
                         do_rotation: False
                         auto_bring_to_front: False
-                        Image:
+                        Video:
                             id: my_oimage
                             allow_stretch: True
+                        ScatterLayout:
+                            id: my_indicator
+                            pos_hint: {'x':2, 'y':2}
+                            size_hint_x: 0.1
+                            size_hint_y: 0.1
+                            Label:
+                                id: my_zindicator
+                                color: (0,1,0,1)
+                                text: '0'
+                            Image:
+                                id: my_marker
+                                source: 'assets/hud_marker.png'
+                                allow_stretch: True
                 BoxLayout:
                     id: my_inpbox
-                    pos_hint: {'x':0.1, 'top':1}
+                    pos_hint: {'x':0.1, 'top':0.9}
                     size_hint_x: 0.2
                     size_hint_y: 0.2
                     ScatterLayout:
@@ -104,13 +93,65 @@
                             id: my_iimage
                             allow_stretch: True
             BoxLayout:
+                id: my_tpan
+                pos_hint: {'x':0.1, 'top':1}
+                size_hint_x: 0.8
+                size_hint_y: 0.1
+                Spinner:
+                    size_hint_x: 0.3
+                    id: my_playmode
+                    text: '>'
+                    values: ('>', '>||', '||')
+                Spinner:
+                    size_hint_x: 0.3
+                    id: my_proc
+                    text: 'PROC-OFF'
+                    values: ('PROC-OFF', 'AVG', 'DIFF', 'CUMSUM')
+                ToggleButton:
+                    size_hint_x: 0.3
+                    id: my_dark
+                    state: 'down'
+                    text: 'DynDark'
+                Button:
+                    size_hint_x: 0.3
+                    id: my_reset
+                    text: 'Reset'
+                BoxLayout:
+                    orientation: 'vertical'
+                    BoxLayout:
+                        id: my_indzoombox
+                        Slider:
+                            id: my_indzoom
+                            min: 1
+                            max: 200
+                            step: 1
+                            value: 1
+                            on_value: my_indzoomvalue.text = str(int(self.value))
+                        Label:
+                            size_hint_x: 0.1
+                            id: my_indzoomvalue
+                            text: '1'
+                    BoxLayout:
+                        Slider:
+                            id: my_stack
+                            min: 1
+                            max: 255
+                            step: 1
+                            value: 128
+                            on_value: my_stackdisplay.text = str(int(self.value))
+                        Label:
+                            size_hint_x: 0.1
+                            id: my_stackdisplay
+                            text: '128'
+            BoxLayout:
                 id: my_ipan
                 orientation: 'vertical'
                 size_hint_x: 0.1
+                size_hint_y: 0.9
                 pos_hint: {'right':0.1, 'top':1}
                 BoxLayout:
                     orientation: 'vertical'
-                    size_hint_y: 0.5
+                    size_hint_y: 0.36
                     ToggleButton:
                         id: my_input
                         text: 'Input'
@@ -126,6 +167,9 @@
                         id: my_iequ
                         text: 'EQ-OFF'
                         values: ('EQU-OFF', 'HIST', 'CLAHE')
+                    ToggleButton:
+                        id: my_idnz
+                        text: 'Denoise'
                     Spinner:
                         id: my_iflt
                         text: 'FLT-OFF'
@@ -133,15 +177,9 @@
                     ToggleButton:
                         id: my_istab
                         text: 'Lock'
-                    ToggleButton:
-                        id: my_iblur
-                        text: 'Blur'
-                    ToggleButton:
-                        id: my_idnz
-                        text: 'Denoise'
                 BoxLayout:
                     orientation: 'vertical'
-                    size_hint_y: 0.5
+                    size_hint_y: 0.46
                     BoxLayout:
                         size_hint_y: 0.1
                         Label:
@@ -172,30 +210,42 @@
                         Label:
                             id: my_ioffsetdisplay
                             text: '0.00'
-                    BoxLayout:
-                        size_hint_y: 0.1
-                        Button:
-                            id: my_iauto
-                            text: 'Auto'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.18
+                    Button:
+                        id: my_iauto
+                        text: 'Auto'
+                    ToggleButton:
+                        id: my_iblur
+                        text: 'Blur'
+                    ToggleButton:
+                        id: my_ihist
+                        text: 'Hist'
             BoxLayout:
                 id: my_opan
                 orientation: 'vertical'
                 pos_hint: {'right':1, 'top':1}
                 size_hint_x: 0.1
+                size_hint_y: 0.9
                 BoxLayout:
                     orientation: 'vertical'
-                    size_hint_y: 0.5
+                    size_hint_y: 0.36
                     ToggleButton:
                         id: my_output
                         text: 'Output'
                         state: 'down'
-                    Button:
+                    Spinner:
                         id: my_colors
                         text: 'GREY'
+                        values: ('GREY', 'AUTUMN', 'BONE', 'JET', 'WINTER', 'RAINBOW', 'OCEAN', 'SUMMER', 'SPRING', 'COOL', 'HSV', 'PINK', 'HOT')
                     Spinner:
                         id: my_oequ
                         text: 'EQ-OFF'
                         values: ('EQU-OFF', 'HIST', 'CLAHE')
+                    ToggleButton:
+                        id: my_odnz
+                        text: 'Denoise'
                     Spinner:
                         id: my_oflt
                         text: 'FLT-OFF'
@@ -203,15 +253,9 @@
                     ToggleButton:
                         id: my_ostab
                         text: 'Lock'
-                    ToggleButton:
-                        id: my_oblur
-                        text: 'Blur'
-                    ToggleButton:
-                        id: my_odnz
-                        text: 'Denoise'
                 BoxLayout:
                     orientation: 'vertical'
-                    size_hint_y: 0.5
+                    size_hint_y: 0.46
                     BoxLayout:
                         size_hint_y: 0.1
                         Label:
@@ -242,53 +286,49 @@
                         Label:
                             id: my_ooffsetdisplay
                             text: '0.00'
-                    BoxLayout:
-                        size_hint_y: 0.1
-                        Button:
-                            id: my_oauto
-                            text: 'Auto'
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: 0.18
+                    Button:
+                        id: my_oauto
+                        text: 'Auto'
+                    ToggleButton:
+                        id: my_oblur
+                        text: 'Blur'
+                    ToggleButton:
+                        id: my_ohist
+                        text: 'Hist'
         BoxLayout:
             id: my_bpan
             pos_hint: {'x':0, 'top':0.1}
             size_hint_x: 0.9
             size_hint_y: 0.1
-            ToggleButton:
-                id: my_play
-                text: '>'
-                state: 'down'
             Spinner:
                 id: my_ichan
                 text: 'BW'
                 values: ('BW', 'R', 'G', 'B', 'H', 'S', 'V', 'Y', 'Cr', 'Cb')
-            ToggleButton:
-                id: my_loop
-                text: 'Loop'
             Button:
-                id: my_screenshot
-                text: 'S'
-            ToggleButton:
-                id: my_video
-                text: 'RV'
-            ToggleButton:
-                id: my_imagesequence
-                text: 'RI'
+                id: my_inifile
+                text: 'Save\nConfig'
+            Spinner:
+                id: my_recorder
+                text: 'Rec-OFF'
+                values: ('Rec-OFF', 'Sequence', 'Video')
             ToggleButton:
                 id: my_vec
-                text: 'VEC'
+                text: 'HUD'
             ToggleButton:
-                id: my_help
-                text: '?'
-        BoxLayout:
-            id: my_helpbox
-            pos_hint: {'top':2.2}
-            size_hint_x: 1
-            size_hint_y: 0.9
-            ScatterLayout:
-                do_rotation: False
-                auto_bring_to_front: False
-                Image:
-                    source: 'doc/PyFSPro_dataflow.jpg'
-                    allow_stretch: True
+                id: my_dout
+                text: 'Data\nOutput (1)'
+            Button:
+                id: my_zero
+                text: 'Zero\nOutput (2)'
+            ToggleButton:
+                id: my_override
+                text: 'Joystick\nDisabled (3)' if self.state == 'down' else 'Joystick\nOverride (3)'
+            ToggleButton:
+                id: my_actuator
+                text: 'Actuator\nACTION! (4)' if self.state == 'down' else 'Actuator\nPaused (4)'
         ToggleButton:
             id: my_osd
             pos_hint: {'x':0.9}
