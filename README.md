@@ -72,7 +72,7 @@ The GUI is divided in five main sections:
 
 ## Description of GUI control elements
 * Input / Output - show / hide input or output video
-* > - select video play mode: > Play and Loop, >|| Play and Pause, || Pause
+* \> - select video play mode: \> Play and Loop, \>\|\| Play and Pause, \|\| Pause
 * PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM)
 * DynDark - (enabled by default) use stack average as dark frame for DIFF and CUMSUM. The moment the button gets disabled, the current frame will be used as fixed dark frame.
 * Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
