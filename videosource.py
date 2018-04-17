@@ -10,6 +10,7 @@ FrameInput class to grab frames of given size from camera or file.
 
 from __future__ import division, print_function
 import sys
+import threading
 import cv2
 import cv2.cv as cv
 
