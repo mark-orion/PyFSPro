@@ -72,7 +72,7 @@ The GUI is divided in five main sections:
 
 ## Description of GUI control elements
 * Input / Output - show / hide input or output video
-* \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output).
+* \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output). Looping and pausing at end are not working with a camera as input source.
 * PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM)
 * DynDark - (enabled by default) use stack average as dark frame for DIFF and CUMSUM. The moment the button gets disabled, the current frame will be used as fixed dark frame.
 * Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
