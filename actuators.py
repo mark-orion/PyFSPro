@@ -9,9 +9,6 @@ Various actuator classes to provide an interface to external hard- and software.
 The 'dummy' class can be used for testing and training.
 """
 
-import requests
-import pyautogui
-import liblo
 import numpy as np
 import cv2
 import cv2.cv as cv
@@ -19,6 +16,11 @@ from threading import Thread, Event
 from kivy.graphics import Line, Color
 from kivy.graphics.instructions import InstructionGroup
 
+"""
+import requests
+import pyautogui
+import liblo
+"""
 
 class Dummy:
     def __init__(self, cnf):
@@ -156,7 +158,7 @@ class Paint(object):
             self.output()
             self.sendrequest.clear()
 
-
+"""
 class Mouse:
     def __init__(self, cnf):
         self.name = 'Mouse'
@@ -216,8 +218,9 @@ class Mouse:
             self.sendrequest.wait()
             self.set_pointer()
             self.sendrequest.clear()
+"""
 
-
+"""
 class OSC:
     def __init__(self, cnf):
         self.name = 'OSC'
@@ -290,8 +293,9 @@ class OSC:
         if self.jy != self.joldy:
             liblo.send(self.oscclient, "/joyy", self.jy)
             self.joldy = self.jy
+"""
 
-
+"""
 class STSpilot:
     def __init__(self, cnf):
         self.name = 'STSpilot'
@@ -361,3 +365,4 @@ class STSpilot:
             self.sendrequest.wait()
             self.http_request()
             self.sendrequest.clear()
+"""
