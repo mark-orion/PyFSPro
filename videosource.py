@@ -22,7 +22,39 @@ try:
 except:
     raspi = False
 
+class FrameInputPi(object):
+    __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
+                 'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
+                 'frame_width', 'frame_height', 'loop']
 
+    def __init__(self, video_src, input_width, input_height, cnf):
+        if raspi is False:
+            print('Picamera not found, exiting.')
+            sys.exit(0)
+        self.cam = picamera.PiCamera()
+        self.input_width = int(input_width)
+        self.input_height = int(input_height)
+        self.frame_width = self.input_width
+        self.frame_height = self.input_height
+        self.thread = None
+        self.loop = False
+        self.video_frame = None
+        self.exit_thread = False
+        if self.input_width > 0 and self.input_height > 0:
+            self.cam.resolution = (self.input_width, self.input_height)
+        self.stream = picamera.array.PiRGBArray(self.cam)
+
+    def grab_frame(self):
+        self.cam.capture(self.stream, 'bgr', use_video_port=True)
+        self.video_frame = self.stream.array
+        return self.video_frame
+
+    def error_handler(self):
+        print("No more frames or capture device down - exiting.",
+              file=sys.stderr)
+        sys.exit(0)
+
+'''
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
                  'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
@@ -78,7 +110,7 @@ class FrameInputPi(object):
         print("No more frames or capture device down - exiting.",
               file=sys.stderr)
         sys.exit(0)
-
+'''
 
 class FrameInput(object):
     __slots__ = ['cnf', 'video_frame', 'exit_thread', 'loop', 'video_src', 'input_width',
