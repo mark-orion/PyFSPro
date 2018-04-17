@@ -113,3 +113,8 @@ class FrameInput(object):
                 self.ret = True
                 self.video_frame = self.old_frame
         return self.video_frame
+
+    def error_handler(self):
+        print("No more frames or capture device down - exiting.",
+              file=sys.stderr)
+        sys.exit(0)
