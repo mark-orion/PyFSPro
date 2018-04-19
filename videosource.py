@@ -22,6 +22,7 @@ try:
 except:
     raspi = False
 
+'''
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
                  'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
@@ -55,10 +56,11 @@ class FrameInputPi(object):
         sys.exit(0)
 
 '''
+
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
                  'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
-                 'frame_width', 'frame_height', 'loop']
+                 'frame_width', 'frame_height', 'loop', 'cnf']
 
     def __init__(self, video_src, input_width, input_height, cnf):
         if raspi is False:
@@ -72,6 +74,7 @@ class FrameInputPi(object):
         self.loop = False
         self.video_frame = None
         self.exit_thread = False
+        self.cnf = cnf
         if self.thread is None:
             # start background frame thread
             self.thread = threading.Thread(target=self.framegrabber_thread)
@@ -100,7 +103,7 @@ class FrameInputPi(object):
                 # reset stream for next frame
                 self.stream.seek(0)
                 self.stream.truncate()
-                if self.exit_thread:
+                if not self.cnf.proc_thread_run:
                     break
 
     def grab_frame(self):
@@ -110,7 +113,7 @@ class FrameInputPi(object):
         print("No more frames or capture device down - exiting.",
               file=sys.stderr)
         sys.exit(0)
-'''
+
 
 class FrameInput(object):
     __slots__ = ['cnf', 'video_frame', 'exit_thread', 'loop', 'video_src', 'input_width',
