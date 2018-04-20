@@ -28,7 +28,7 @@ class Settings(object):
                  'gain_inp', 'gain_out', 'offset_inp', 'offset_out', 'stb_inp', 'stb_out',
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
-                 'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam']
+                 'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring']
 
     def __init__(self):
         self.Config = ConfigParser()
