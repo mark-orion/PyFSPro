@@ -331,7 +331,8 @@ class PyFSPro(App):
             self.cnf.recordi = True
         elif value == 'Video' and skvdetected:
             self.cnf.recordi = False
-            self.cnf.video = VideoWriter(self.cnf.output_dir + self.cnf.gettime() + '.avi')
+            self.cnf.video = VideoWriter(
+                self.cnf.output_dir + self.cnf.gettime() + '.avi')
             self.cnf.recordv = True
         else:
             self.cnf.recordi = False
@@ -559,6 +560,8 @@ class PyFSPro(App):
             self.cnf.video_width = self.args.input_width
         if self.args.input_height is not None:
             self.cnf.video_height = self.args.input_height
+        if self.args.input_fourcc is not None:
+            self.cnf.prop_fourcc = self.args.input_fourcc
         if self.args.output_dir is not None:
             self.cnf.output_dir = self.args.output_dir
         if self.args.log_vector is not None:
@@ -747,6 +750,8 @@ class PyFSPro(App):
                             help='Width of captured frames')
         parser.add_argument('-ih', '--input_height',
                             help='Height of captured frames')
+        parser.add_argument('-i4', '--input_fourcc',
+                            help='fourcc string for input camera codec. Default YUYV')
         parser.add_argument('-ib', '--input_blur', action='store_true',
                             help='Blur Input')
         parser.add_argument('-ie', '--input_equalize',
@@ -794,9 +799,11 @@ class PyFSPro(App):
 
         # initialize video input
         if self.cnf.raspicam:
-            self.imageinput = vs.FrameInputPi(self.cnf.video_src, self.cnf.video_width, self.cnf.video_height, self.cnf)
+            self.imageinput = vs.FrameInputPi(
+                self.cnf.video_src, self.cnf.video_width, self.cnf.video_height, self.cnf)
         else:
-            self.imageinput = vs.FrameInput(self.cnf.video_src, self.cnf.video_width, self.cnf.video_height, self.cnf)
+            self.imageinput = vs.FrameInput(
+                self.cnf.video_src, self.cnf.video_width, self.cnf.video_height, self.cnf)
         self.cnf.video_width = self.imageinput.frame_width
         self.cnf.video_height = self.imageinput.frame_height
 
@@ -871,7 +878,8 @@ class PyFSPro(App):
                 self.cnf.rootwidget.stackdisplay_wid.color = (1, 0, 0, 1)
             else:
                 self.cnf.rootwidget.stackdisplay_wid.color = (0, 1, 0, 1)
-            self.process_vector(self.cnf.x_avg, self.cnf.y_avg, self.cnf.full_avg)
+            self.process_vector(
+                self.cnf.x_avg, self.cnf.y_avg, self.cnf.full_avg)
             if self.cnf.indzoominc != 0:
                 zoom = self.cnf.rootwidget.indzoom_wid.value
                 zoom = np.clip(zoom + self.cnf.indzoominc, 1, 200)
@@ -922,9 +930,11 @@ class PyFSPro(App):
             if self.cnf.flt_inp != 0:
                 self.inp = cv2.filter2D(self.inp, -1, self.cnf.flt_inp_kernel)
             if self.cnf.stb_inp:
-                self.transform = cv2.estimateRigidTransform(self.inp_old, self.inp, False)
+                self.transform = cv2.estimateRigidTransform(
+                    self.inp_old, self.inp, False)
                 if self.transform is not None:
-                    self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height), self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+                    self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
+                                              self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
             self.inp_old = self.inp
             self.cnf.iimage = self.inp.copy()
             self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
@@ -946,9 +956,11 @@ class PyFSPro(App):
             if self.cnf.flt_out != 0:
                 self.dsp = cv2.filter2D(self.dsp, -1, self.cnf.flt_out_kernel)
             if self.cnf.stb_out:
-                self.transform = cv2.estimateRigidTransform(self.dsp_old, self.dsp, False)
+                self.transform = cv2.estimateRigidTransform(
+                    self.dsp_old, self.dsp, False)
                 if self.transform is not None:
-                    self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height), self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+                    self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height),
+                                              self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
             self.dsp_old = self.dsp
             self.cnf.oimage = self.dsp.copy()
             # create output image

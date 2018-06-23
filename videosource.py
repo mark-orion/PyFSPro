@@ -56,6 +56,7 @@ class FrameInputPi(object):
 
 '''
 
+
 class FrameInputPi(object):
     __slots__ = ['raspi', 'input_width', 'input_height', 'thread',
                  'video_frame', 'exit_thread', 'cam', 'stream', 'foo',
@@ -117,7 +118,7 @@ class FrameInputPi(object):
 class FrameInput(object):
     __slots__ = ['cnf', 'video_frame', 'exit_thread', 'loop', 'video_src', 'input_width',
                  'input_height', 'cam', 'frame_width', 'frame_height', 'ret', 'old_frame',
-                 'img', 'prop_width', 'prop_height', 'prop_pos']
+                 'img']
 
     def __init__(self, video_src, input_width, input_height, cnf):
         self.cnf = cnf
@@ -125,9 +126,12 @@ class FrameInput(object):
         self.exit_thread = False  # needed for compatibility with videosource_pi.py
         self.loop = False
         self.video_src = video_src
-        self.input_width = input_width
-        self.input_height = input_height
+        self.input_width = int(input_width)
+        self.input_height = int(input_height)
         self.cam = cv2.VideoCapture(self.video_src)
+        self.cam.set(6, cv2.VideoWriter_fourcc(
+            self.cnf.prop_fourcc[0], self.cnf.prop_fourcc[1], self.cnf.prop_fourcc[2],
+            self.cnf.prop_fourcc[3]))
         if self.input_width > 0 and self.input_height > 0:
             self.cam.set(self.cnf.cap_prop_frame_width,
                          float(self.input_width))

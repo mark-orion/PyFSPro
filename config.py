@@ -10,6 +10,7 @@ import os.path
 import time
 from kivy.config import ConfigParser
 
+
 class Settings(object):
     __slots__ = ['cfgfilename', 'background_source', 'max_stacksize', 'color_mode', 'input_channel',
                  'video_src', 'video_width', 'video_height', 'show_inp', 'show_out', 'show_vec',
@@ -29,7 +30,7 @@ class Settings(object):
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
-                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames']
+                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -65,6 +66,7 @@ class Settings(object):
         self.cap_prop_frame_width = 3
         self.cap_prop_frame_height = 4
         self.cap_prop_pos_frames = 1
+        self.prop_fourcc = 'YUYV'
 
         # variables for vector display and actuators
         self.x_avg = 0
@@ -167,6 +169,7 @@ class Settings(object):
         self.Config.set('Input', 'video_src', self.video_src)
         self.Config.set('Input', 'video_width', self.video_width)
         self.Config.set('Input', 'video_height', self.video_height)
+        self.Config.set('Input', 'video_codec', self.prop_fourcc)
         self.Config.set('Input', 'input', widget.inp_wid.state)
         self.Config.set('Input', 'flip_x', widget.flipx_wid.state)
         self.Config.set('Input', 'flip_y', widget.flipy_wid.state)
@@ -218,6 +221,7 @@ class Settings(object):
             self.video_src = self.Config.get('Input', 'video_src')
             self.video_width = int(self.Config.get('Input', 'video_width'))
             self.video_height = int(self.Config.get('Input', 'video_height'))
+            self.prop_fourcc = self.Config.get('Input', 'video_codec')
             self.dnz_inp_str = float(self.Config.get('Input', 'dnz_inp_str'))
             self.flt_inp_strength = float(
                 self.Config.get('Input', 'flt_inp_strength'))
