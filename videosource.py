@@ -13,7 +13,6 @@ import sys
 import threading
 import time
 import cv2
-import cv2.cv as cv
 
 try:
     import picamera
@@ -118,7 +117,7 @@ class FrameInputPi(object):
 class FrameInput(object):
     __slots__ = ['cnf', 'video_frame', 'exit_thread', 'loop', 'video_src', 'input_width',
                  'input_height', 'cam', 'frame_width', 'frame_height', 'ret', 'old_frame',
-                 'img']
+                 'img', 'prop_width', 'prop_height', 'prop_pos']
 
     def __init__(self, video_src, input_width, input_height, cnf):
         self.cnf = cnf
@@ -130,15 +129,15 @@ class FrameInput(object):
         self.input_height = input_height
         self.cam = cv2.VideoCapture(self.video_src)
         if self.input_width > 0 and self.input_height > 0:
-            self.cam.set(cv.CV_CAP_PROP_FRAME_WIDTH,
+            self.cam.set(self.cnf.cap_prop_frame_width,
                          float(self.input_width))
-            self.cam.set(cv.CV_CAP_PROP_FRAME_HEIGHT,
+            self.cam.set(self.cnf.cap_prop_frame_height,
                          float(self.input_height))
         if self.cam is None or not self.cam.isOpened():
             print("Warning: unable to open video source:" +
                   str(self.video_src), file=sys.stderr)
-        self.frame_width = int(self.cam.get(cv.CV_CAP_PROP_FRAME_WIDTH))
-        self.frame_height = int(self.cam.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
+        self.frame_width = int(self.cam.get(self.cnf.cap_prop_frame_width))
+        self.frame_height = int(self.cam.get(self.cnf.cap_prop_frame_height))
         self.ret, self.img = self.cam.read()
         if self.ret is False:
             self.error_handler()
@@ -148,7 +147,7 @@ class FrameInput(object):
         self.ret, self.video_frame = self.cam.read()
         while self.ret is False:
             if self.loop:
-                self.cam.set(cv.CV_CAP_PROP_POS_FRAMES, 0)
+                self.cam.set(self.cnf.cap_prop_pos_frames, 0)
                 self.ret, self.video_frame = self.cam.read()
             else:
                 self.cnf.rootwidget.playmode_wid.text = '||'

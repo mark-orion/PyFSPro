@@ -39,13 +39,13 @@ The 'doc' folder contains the flow diagram and pattern files that can be used fo
 
 ## Requirements
 * Please refer to INSTALL.win for Windows installation instructions.
-* Tested with Python 2.7, not ported to Python 3 yet!
-* Kivy (tested with version 1.9.1)
-* Numpy (tested with version 1.11)
-* OpenCV with Python bindings (tested with version 2.4.9)
+* Works with both Python 2 and 3
+* Kivy (tested with version 1.9.1 and higher)
+* Numpy (tested with version 1.11 and higher)
+* OpenCV with Python bindings (supports both OpenCV 2 and 3)
 On Debian / Ubuntu based systems the requirements can be installed with the following commands:  
 sudo apt-get install python-numpy python-opencv  
-Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions  
+Please check the [Kivy Website](http://kivy.org) for Kivy installation instructions.  
 
 ### Optional for video recording
 * For high resolution video it is best practice to use the OpenCV based image sequence recording instead of scikit-video.
@@ -59,8 +59,9 @@ sudo pip install sk-video
 
 
 ## Usage
-Installation: Clone or download PyFSPro  
+Installation: Clone or download PyFSPro from [Github](https://github.com/mark-orion/PyFSPro)  
 Run the program: python PyFSPro.py  
+Or alternatively python2/python3 PyFSPro.py  
 
 ## Graphical User Interface
 The GUI is divided in five main sections:

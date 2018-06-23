@@ -28,7 +28,8 @@ class Settings(object):
                  'gain_inp', 'gain_out', 'offset_inp', 'offset_out', 'stb_inp', 'stb_out',
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
-                 'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring']
+                 'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
+                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -59,6 +60,11 @@ class Settings(object):
         self.loop = True
         self.run = True
         self.raspicam = False
+
+        # opencv properties
+        self.cap_prop_frame_width = 3
+        self.cap_prop_frame_height = 4
+        self.cap_prop_pos_frames = 1
 
         # variables for vector display and actuators
         self.x_avg = 0

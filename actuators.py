@@ -11,7 +11,6 @@ The 'dummy' class can be used for testing and training.
 
 import numpy as np
 import cv2
-import cv2.cv as cv
 from threading import Thread, Event
 from kivy.graphics import Line, Color
 from kivy.graphics.instructions import InstructionGroup
