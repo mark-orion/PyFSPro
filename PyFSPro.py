@@ -16,12 +16,14 @@ from threading import Thread, Event
 # Linux bug
 try:
     from skvideo.io import FFmpegWriter as VideoWriter
+
     skvdetected = True
 except:
     skvdetected = False
 
-# disable Kivy command line args
+# disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
+os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -39,7 +41,7 @@ import config
 
 # choose between generic and Raspberry Pi camera support
 import videosource as vs
-#import videosource_pi as vs
+# import videosource_pi as vs
 
 import actuators as acts
 import framestacker as fs
@@ -99,6 +101,7 @@ class MyScreen(BoxLayout):
     marker_wid = ObjectProperty()
     istab_wid = ObjectProperty()
     ostab_wid = ObjectProperty()
+    trf_wid = ObjectProperty()
     playmode_wid = ObjectProperty()
 
 
@@ -422,6 +425,18 @@ class PyFSPro(App):
         else:
             self.cnf.show_ohist = False
 
+    def trf_callback(self, instance, value):
+        if value == 'Rise':
+            self.cnf.trslope = 0
+            self.cnf.trfilter = True
+            self.cnf.rootwidget.indzoom_wid.value = self.cnf.trtrigger * 100
+        elif value == 'Fall':
+            self.cnf.trslope = 1
+            self.cnf.trfilter = True
+            self.cnf.rootwidget.indzoom_wid.value = self.cnf.trtrigger * 100
+        else:
+            self.cnf.trfilter = False
+
     def playmode_callback(self, instance, value):
         if value == '>':
             self.cnf.loop = True
@@ -460,13 +475,6 @@ class PyFSPro(App):
         if self.cnf.actuator:
             self.cnf.act.transmit(
                 outx, outy, outz, self.cnf.joyx, self.cnf.joyy)
-        if self.cnf.log:
-            logstring = str(time.time()) + ',' + time.strftime("%Y%m%d%H%M%S") + ',' + str(outx) + ',' + str(
-                outy) + ',' + str(outz) + ',' + str(self.cnf.joyx) + ',' + str(self.cnf.joyy) + '\n'
-            if self.cnf.logfile == 'STDOUT':
-                sys.stdout.write(logstring)
-            else:
-                self.cnf.loghandle.write(logstring)
         if self.cnf.show_vec:
             indx = np.clip(outx / 200 + 0.45, -0.05, 0.95)
             indy = np.clip(outy / 200 + 0.45, -0.05, 0.95)
@@ -476,6 +484,13 @@ class PyFSPro(App):
             self.cnf.rootwidget.indicator_wid.pos_hint = ind_pos
             if self.cnf.show_z:
                 self.cnf.rootwidget.zindicator_wid.text = str(int(outz))
+            if self.cnf.log and not self.cnf.trfilter:
+                logstring = str(time.time()) + ',' + time.strftime("%Y%m%d%H%M%S") + ',' + str(outx) + ',' + str(
+                    outy) + ',' + str(outz) + ',' + str(self.cnf.joyx) + ',' + str(self.cnf.joyy) + '\n'
+                if self.cnf.logfile == 'STDOUT':
+                    sys.stdout.write(logstring)
+                else:
+                    self.cnf.loghandle.write(logstring)
 
     def image_histogram(self, inputimage, plotimage, color):
         height, width, chans = plotimage.shape
@@ -490,7 +505,10 @@ class PyFSPro(App):
         return plotimage
 
     def indzoom_callback(self, instance, value):
-        self.cnf.indzoom = float(value)
+        if self.cnf.trfilter:
+            self.cnf.trtrigger = float(value / 100)
+        else:
+            self.cnf.indzoom = float(value)
 
     def on_joy_axis(self, win, stickid, axisid, value):
         if axisid == self.cnf.joyxaxis:
@@ -564,11 +582,11 @@ class PyFSPro(App):
             self.cnf.prop_fourcc = self.args.input_fourcc
         if self.args.output_dir is not None:
             self.cnf.output_dir = self.args.output_dir
-        if self.args.log_vector is not None:
-            self.cnf.logfile = self.args.log_vector
+        if self.args.log is not None:
+            self.cnf.logfile = self.args.log
             self.cnf.log = True
-            if self.args.log_vector == 'STDOUT':
-                sys.stdout = os.fdopen(sys.stdout.fileno(), 'a', 0)
+            if self.args.log == 'STDOUT':
+                self.cnf.loghandle = sys.stdout
             else:
                 self.cnf.loghandle = open(self.cnf.logfile, 'a')
         if str(self.cnf.video_src).isdigit():
@@ -579,6 +597,8 @@ class PyFSPro(App):
             self.cnf.background_source = self.args.background_source
         if str(self.args.blur_strength).isdigit():
             self.cnf.blr_strength = int(self.args.blur_strength)
+        if str(self.args.trf_trigger).isdigit():
+            self.cnf.trtrigger = float(self.args.trf_trigger)
 
     def apply_ui_args(self):
         if self.args.config_file is not None:
@@ -638,6 +658,29 @@ class PyFSPro(App):
             self.cnf.rootwidget.inp_wid.state = 'normal'
         if self.args.hide_output:
             self.cnf.rootwidget.out_wid.state = 'normal'
+        if self.args.trf_mode is not None:
+            self.cnf.rootwidget.tfl_wid.text = self.args.tfl_mode
+
+    def create_output(self):
+        self.cnf.oimage = self.dsp.copy()
+        # create output image
+        if self.cnf.pseudoc:
+            self.cnf.out = cv2.applyColorMap(self.cnf.oimage, self.cnf.color_mode)
+        else:
+            self.cnf.out = cv2.cvtColor(self.cnf.oimage, cv2.COLOR_GRAY2BGR)
+
+        # get output vector
+        self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(
+            self.cnf.imagestack.float_out)
+
+        # record image sequence or video
+        if self.cnf.recordi:
+            self.cnf.output_file = self.cnf.image_dst + \
+                                   str(self.cnf.imgindx).zfill(8) + '.bmp'
+            cv2.imwrite(self.cnf.output_fileself.cnf.out)
+            self.cnf.imgindx += 1
+        elif self.cnf.recordv:
+            self.cnf.video.writeFrame(self.cnf.out)
 
     def build(self):
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -702,6 +745,7 @@ class PyFSPro(App):
         self.cnf.rootwidget.zero_wid.bind(on_release=self.zerooutput_callback)
         self.cnf.rootwidget.ichan_wid.bind(text=self.ichan_callback)
         self.cnf.rootwidget.indzoom_wid.bind(value=self.indzoom_callback)
+        self.cnf.rootwidget.trf_wid.bind(text=self.trf_callback)
         self.cnf.rootwidget.playmode_wid.bind(text=self.playmode_callback)
         self.cnf.rootwidget.inifile_wid.bind(
             on_release=self.inifile_callback)
@@ -764,7 +808,7 @@ class PyFSPro(App):
                             help='Enable input image stabilizer')
         parser.add_argument('-in', '--input_denoise', action='store_true',
                             help='Input Denoise')
-        parser.add_argument('-l', '--log_vector',
+        parser.add_argument('-l', '--log',
                             help='Log to Filename or STDOUT')
         parser.add_argument('-ob', '--output_blur', action='store_true',
                             help='Blur Output')
@@ -779,7 +823,7 @@ class PyFSPro(App):
         parser.add_argument('-og', '--output_gain', help='Output Gain')
         parser.add_argument('-oi', '--output_stabilizer', action='store_true',
                             help='Enable output image stabilizer')
-        parser.add_argument('-on', '--output_denoise',  action='store_true',
+        parser.add_argument('-on', '--output_denoise', action='store_true',
                             help='Output Denoise')
         parser.add_argument('-or', '--output_recording',
                             help='Record output: SEQ, VID')
@@ -791,6 +835,10 @@ class PyFSPro(App):
                             help='Image Stacking (No. of frames to stack)')
         parser.add_argument('-st', '--single_thread', action='store_true',
                             help='Run appication as single thread')
+        parser.add_argument('-tfm', '--trf_mode',
+                            help='Set Transient Filter Mode: Rise, Fall')
+        parser.add_argument('-tft', '--trf_trigger',
+                            help='Set Transient Filter Triggerlevel')
         parser.add_argument('-vz', '--vector_zoom',
                             help='Set Vector Display / Output Zoom')
 
@@ -867,8 +915,7 @@ class PyFSPro(App):
                         self.cnf.oimage, tmpimg, self.cnf.green)
                 else:
                     self.cnf.disp_image = tmpimg
-                self.cnf.rootwidget.oimage_wid.texture = self.img2tex(
-                    self.cnf.disp_image)
+                self.cnf.rootwidget.oimage_wid.texture = self.img2tex(self.cnf.disp_image)
             if self.cnf.show_inp:
                 self.showiimage = cv2.cvtColor(np.uint8(self.cnf.imagestack.inp_frame),
                                                cv2.COLOR_GRAY2BGR)
@@ -880,7 +927,7 @@ class PyFSPro(App):
                 self.cnf.rootwidget.stackdisplay_wid.color = (0, 1, 0, 1)
             self.process_vector(
                 self.cnf.x_avg, self.cnf.y_avg, self.cnf.full_avg)
-            if self.cnf.indzoominc != 0:
+            if self.cnf.indzoominc != 0 and not self.cnf.trfilter:
                 zoom = self.cnf.rootwidget.indzoom_wid.value
                 zoom = np.clip(zoom + self.cnf.indzoominc, 1, 200)
                 self.cnf.rootwidget.indzoom_wid.value = float(zoom)
@@ -934,7 +981,8 @@ class PyFSPro(App):
                     self.inp_old, self.inp, False)
                 if self.transform is not None:
                     self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
-                                              self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
+                                              self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
+                                              cv2.BORDER_TRANSPARENT)
             self.inp_old = self.inp
             self.cnf.iimage = self.inp.copy()
             self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
@@ -960,27 +1008,25 @@ class PyFSPro(App):
                     self.dsp_old, self.dsp, False)
                 if self.transform is not None:
                     self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height),
-                                              self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP, cv2.BORDER_TRANSPARENT)
-            self.dsp_old = self.dsp
-            self.cnf.oimage = self.dsp.copy()
-            # create output image
-            if self.cnf.pseudoc:
-                self.cnf.out = cv2.applyColorMap(self.dsp, self.cnf.color_mode)
+                                              self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
+                                              cv2.BORDER_TRANSPARENT)
+
+            # transient filter
+            if self.cnf.trfilter:
+                self.cnf.trpre, self.cnf.trflt = self.cnf.imagestack.getTRFILTER(self.cnf.imagestack.float_out)
+                self.cnf.trpref = abs(self.cnf.trpre - self.cnf.trflt)
+                if self.cnf.log:
+                    logstring = str(time.time()) + ',' + time.strftime("%Y%m%d%H%M%S") + ',' + str(self.cnf.trflt) + ',' + str(self.cnf.trpref) + '\n'
+                    self.cnf.loghandle.write(logstring)
+                if self.cnf.trslope == 1:
+                    if self.cnf.trpref <= self.cnf.trtrigger:
+                        self.create_output()
+                elif self.cnf.trpref >= self.cnf.trtrigger:
+                    self.create_output()
             else:
-                self.cnf.out = cv2.cvtColor(self.dsp, cv2.COLOR_GRAY2BGR)
+                self.create_output()
 
-            # get output vector
-            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(
-                self.cnf.imagestack.float_out)
-
-            # record image sequence or video
-            if self.cnf.recordi:
-                self.cnf.filename = self.cnf.image_dst + \
-                    str(self.cnf.imgindx).zfill(8) + '.bmp'
-                cv2.imwrite(self.cnf.filename, self.cnf.out)
-                self.cnf.imgindx += 1
-            elif self.cnf.recordv:
-                self.cnf.video.writeFrame(self.cnf.out)
+            self.dsp_old = self.dsp
 
 
 if __name__ == '__main__':

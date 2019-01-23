@@ -36,6 +36,7 @@ The 'doc' folder contains the flow diagram and pattern files that can be used fo
 * DeNoising
 * Pseudo Color
 * Histogram plot of input and output data (good for camera calibration)
+* Transient filter (display or save frames that "stick out" of the sequence)
 
 ## Requirements
 * Please refer to INSTALL.win for Windows installation instructions.
@@ -77,7 +78,8 @@ The GUI is divided in five main sections:
 * PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM)
 * DynDark - (enabled by default) use stack average as dark frame for DIFF and CUMSUM. The moment the button gets disabled, the current frame will be used as fixed dark frame.
 * Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
-* The top slider sets the sensitivity of the vector output.
+* TR-OFF - Transient Filter (OFF, Rising Intensity Slope, Falling Intensity Slope)
+* The top slider sets the sensitivity of the vector output or the triggerlevel in transient mode.
 * The bottom slider sets the stack size. The number of frames is displayed to the right. It turns green when the stack is full and rolling.
 * X / Y - flip image around X or Y axis.
 * GREY - click to change color palette from greyscale to pseudo color.
@@ -123,4 +125,4 @@ Run 'python PyFSPro.py --help' for a full list of command line options.
  * PICAMERA to use a RaspberryPi camera.
 
 
-Mark Dammer, Forres, Scotland 2018
+Mark Dammer, Forres, Scotland 2019

@@ -25,6 +25,7 @@ class Settings(object):
                  'image_dst', 'blr_inp', 'blr_out', 'blr_strength', 'equ_inp', 'equ_out',
                  'dnz_inp', 'dnz_out', 'dnz_inp_str', 'dnz_out_str', 'flt_inp', 'flt_out',
                  'flt_inp_strength', 'flt_out_strength', 'flt_inp_kernel', 'flt_out_kernel',
+                 'trfilter', 'trslope', 'trtrigger', 'trpre', 'trflt', 'trpref', 'output_file',
                  'inp_kernel', 'out_kernel', 'flip_x', 'flip_y', 'mode_prc', 'pseudoc', 'dyn_dark',
                  'gain_inp', 'gain_out', 'offset_inp', 'offset_out', 'stb_inp', 'stb_out',
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
@@ -112,11 +113,20 @@ class Settings(object):
         self.proc_fps = 1.0 / 30.0
         self.output_fps = 1.0 / 25.0
 
+        # settings for transient filter
+        self.trfilter = False
+        self.trslope = 1
+        self.trtrigger = 1
+        self.trpre = 0
+        self.trflt = 0
+        self.trpref = 0
+
         # settings for video and image sequence recording
         self.recordi = False
         self.recordv = False
         self.imgindx = 0
         self.video = None
+        self.output_file = None
         self.output_dir = './output/'
         self.image_dst = self.output_dir
 
@@ -211,6 +221,8 @@ class Settings(object):
         self.Config.set('Output', 'background_source', self.background_source)
         self.Config.set('Output', 'osd', widget.osd_wid.state)
         self.Config.set('Output', 'hud', widget.vec_wid.state)
+        self.Config.set('Output', 'trf_mode', widget.trf_wid.text)
+        self.Config.set('Output', 'trf_trig', self.trtrigger)
         self.Config.read(filename)
         self.Config.write()
 
@@ -235,6 +247,7 @@ class Settings(object):
                 self.Config.get('Output', 'flt_out_strength'))
             self.background_source = self.Config.get(
                 'Output', 'background_source')
+            self.trtrigger = self.Config.get('Output', 'trf_trig')
         else:
             print('File ' + str(filename) + ' does not exist.')
 
@@ -283,5 +296,7 @@ class Settings(object):
             widget.colors_wid.text = self.Config.get('Output', 'color_mode')
             widget.osd_wid.state = self.Config.get('Output', 'osd')
             widget.vec_wid.state = self.Config.get('Output', 'hud')
+            widget.trf_wid.text = self.Config.get('Output', 'trf')
+
         else:
             print('File ' + str(filename) + ' does not exist.')

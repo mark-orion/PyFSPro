@@ -22,7 +22,7 @@ class FrameStack(object):
                  'dark_frame', 'var', 'sd', 'z', 'cumsum', 'full_avg', 'left_avg', 'right_avg',
                  'upper_avg', 'lower_avg', 'x_avg', 'y_avg', 'raw_out', 'float_out', 'r', 'c',
                  'max_inp', 'min_inp', 'max_out', 'min_out', 'kernel', 'i', 'proc_out',
-                 'initframe']
+                 'initframe', 'prefilter', 'trfilter', 'trpre', 'trflt']
 
     def __init__(self, stacksize, stackrange, width, height):
         self.dyn_dark = True
@@ -125,16 +125,23 @@ class FrameStack(object):
     def getVECTOR(self, img):
         self.full_avg = np.nanmean(img)
         self.left_avg = np.nanmean(img[0:self.height,
-                                       0:self.center_x])
+                                   0:self.center_x])
         self.right_avg = np.nanmean(img[0:self.height,
-                                        self.center_x:self.width])
+                                    self.center_x:self.width])
         self.upper_avg = np.nanmean(img[0:self.center_y,
-                                        0:self.width])
+                                    0:self.width])
         self.lower_avg = np.nanmean(img[self.center_y:self.height,
-                                        0:self.width])
+                                    0:self.width])
         self.x_avg = self.right_avg - self.left_avg
         self.y_avg = self.upper_avg - self.lower_avg
         return self.full_avg, self.x_avg, self.y_avg
+
+    def getTRFILTER(self, img):
+        self.prefilter = self.trfilter
+        self.trfilter = img
+        self.trpre = np.nanmean(abs(self.prefilter))
+        self.trflt = np.nanmean(abs(self.trfilter))
+        return self.trpre, self.trflt
 
     def resetCUMSUM(self):
         self.cumsum = self.emptyFrame(self.default_value,
@@ -192,6 +199,8 @@ class FrameStack(object):
         self.sum_frames = self.initframe
         self.sum_sqd = self.initframe
         self.z = self.initframe
+        self.prefilter = self.initframe
+        self.trfilter = self.initframe
         self.frame_stack = []
         self.sqd_stack = []
         for self.i in range(self.stackrange):
