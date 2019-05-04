@@ -9,6 +9,7 @@ Created on Fri Mar 10 10:00:42 2017
 import os.path
 import time
 from kivy.config import ConfigParser
+import numpy as np
 
 
 class Settings(object):
@@ -31,7 +32,7 @@ class Settings(object):
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
-                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc']
+                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -62,6 +63,7 @@ class Settings(object):
         self.loop = True
         self.run = True
         self.raspicam = False
+        self.xorvalue = np.uint8(0)
 
         # opencv properties
         self.cap_prop_frame_width = 3

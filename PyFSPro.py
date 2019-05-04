@@ -410,6 +410,10 @@ class PyFSPro(App):
             self.cnf.input_channel = 8
         elif value == 'Cb':
             self.cnf.input_channel = 9
+        elif value == 'RND':
+            self.cnf.input_channel = 10
+        elif value == 'RNDX':
+            self.cnf.input_channel = 11
         else:
             self.cnf.input_channel = 0
 
@@ -787,7 +791,7 @@ class PyFSPro(App):
         parser.add_argument('-ho', '--hide_output', action='store_true',
                             help='Hide output image')
         parser.add_argument('-ic', '--input_channel',
-                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb')
+                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX')
         parser.add_argument('-is', '--input_source',
                             help='Input Source: Filename, camera index or PICAMERA')
         parser.add_argument('-iw', '--input_width',
@@ -967,6 +971,15 @@ class PyFSPro(App):
             elif self.cnf.input_channel == 9:
                 y, cr, self.inp = cv2.split(
                     cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+            elif self.cnf.input_channel == 10:
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 127
+            elif self.cnf.input_channel == 11:
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
+                self.inp = np.bitwise_xor(self.inp, self.cnf.xorvalue) * 127
+                if self.cnf.xorvalue == 0:
+                    self.cnf.xorvalue = 1
+                else:
+                    self.cnf.xorvalue = 0
             if self.cnf.equ_inp == 1:
                 self.inp = cv2.equalizeHist(self.inp)
             elif self.cnf.equ_inp == 2:
