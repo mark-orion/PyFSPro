@@ -15,11 +15,9 @@ from threading import Thread, Event
 from kivy.graphics import Line, Color
 from kivy.graphics.instructions import InstructionGroup
 
-"""
 import requests
 import pyautogui
 import liblo
-"""
 
 class Dummy:
     def __init__(self, cnf):
@@ -294,7 +292,6 @@ class OSC:
             self.joldy = self.jy
 """
 
-"""
 class STSpilot:
     def __init__(self, cnf):
         self.name = 'STSpilot'
@@ -324,7 +321,7 @@ class STSpilot:
     def video_stop(self):
         self.video.state = 'stop'
 
-    def transmit(self, x, y, z):
+    def transmit(self, x, y, z, jx, jy):
         self.x = int(x)
         self.y = int(y)
         if self.x != self.oldx or self.y != self.oldy:
@@ -364,4 +361,4 @@ class STSpilot:
             self.sendrequest.wait()
             self.http_request()
             self.sendrequest.clear()
-"""
+

@@ -23,7 +23,7 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-#os.environ["KIVY_NO_CONSOLELOG"] = "1"
+os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -897,7 +897,7 @@ class PyFSPro(App):
 
         # load actuator
         self.oimage_size_callback(None, self.cnf.rootwidget.oimage_wid.size)
-        self.cnf.act = acts.Paint(self.cnf)
+        self.cnf.act = acts.STSpilot(self.cnf)
 
         # update UI and settings
         self.apply_ui_args()
@@ -943,7 +943,7 @@ class PyFSPro(App):
                 self.cnf.x_avg, self.cnf.y_avg, self.cnf.full_avg)
             if self.cnf.indzoominc != 0 and not self.cnf.trfilter:
                 zoom = self.cnf.rootwidget.indzoom_wid.value
-                zoom = np.clip(zoom + self.cnf.indzoominc, 1, 200)
+                zoom = np.clip(zoom + self.cnf.indzoominc, 1, 400)
                 self.cnf.rootwidget.indzoom_wid.value = float(zoom)
 
     def process_thread(self):
@@ -982,15 +982,15 @@ class PyFSPro(App):
                 y, cr, self.inp = cv2.split(
                     cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
             elif self.cnf.input_channel == 10:
-                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 127
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 255
             elif self.cnf.input_channel == 11:
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
                 if self.cnf.xorvalue:
                     self.cnf.xorvalue = False
-                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2) * 127
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2) * 255
                 else:
                     self.cnf.xorvalue = True
-                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 127
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 255
             if self.cnf.equ_inp == 1:
                 self.inp = cv2.equalizeHist(self.inp)
             elif self.cnf.equ_inp == 2:
