@@ -91,7 +91,8 @@ The GUI is divided in five main sections:
 * Blur - toggle blurring.
 * Hist - show input or output histogram (useful for camera adjustment).
 * BW - choose channel from various color spaces or LSB mask for random number generation (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX)  
-RND returns LSB * 127, RNDX 1 bit XOR masked LSB * 127. Odd frames are masked with 0, even frames with 1. 
+RND returns LSB * 127  
+RNDX works like RND but the output is XOR masked with a "chequerboard" array of ones and zeroes. In order to reduce bias, an inverted array is used for every second frame.    
 * Save Config - save current configuration. The default save location is ./output/ and can be changed with the -od / --output_dir option.
 * Rec-Off - save the output stream as video or image sequence. The default save location is ./output/ and can be changed with the -od / --output_dir option.
 * HUD - Show vectorscope marker on the screen.

@@ -23,7 +23,7 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-os.environ["KIVY_NO_CONSOLELOG"] = "1"
+#os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -686,6 +686,15 @@ class PyFSPro(App):
         elif self.cnf.recordv:
             self.cnf.video.writeFrame(self.cnf.out)
 
+    def generate_xormasks(self):
+        one = np.uint8(1)
+        self.cnf.xormask1 = np.zeros((self.cnf.video_height, self.cnf.video_width), np.uint8)
+        for v in range(0, self.cnf.video_width, 2):
+            for h in range(0, self.cnf.video_height, 2):
+                self.cnf.xormask1[h, v] = one
+                self.cnf.xormask1[h + 1, v + 1] = one
+        self.cnf.xormask2 = np.bitwise_xor(self.cnf.xormask1, 1)
+
     def build(self):
         signal.signal(signal.SIGINT, self.signal_handler)
         self.cnf = config.Settings()
@@ -873,6 +882,7 @@ class PyFSPro(App):
         # prepre background image
         self.background = np.full((self.cnf.video_height, self.cnf.video_width, 3),
                                   self.cnf.imagestack.default_value, np.uint8)
+        self.generate_xormasks()
 
         # prepare first frame
         self.inp = self.imageinput.grab_frame()
@@ -975,11 +985,12 @@ class PyFSPro(App):
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 127
             elif self.cnf.input_channel == 11:
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
-                self.inp = np.bitwise_xor(self.inp, self.cnf.xorvalue) * 127
-                if self.cnf.xorvalue == 0:
-                    self.cnf.xorvalue = 1
+                if self.cnf.xorvalue:
+                    self.cnf.xorvalue = False
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2) * 127
                 else:
-                    self.cnf.xorvalue = 0
+                    self.cnf.xorvalue = True
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 127
             if self.cnf.equ_inp == 1:
                 self.inp = cv2.equalizeHist(self.inp)
             elif self.cnf.equ_inp == 2:

@@ -32,7 +32,8 @@ class Settings(object):
                  'vec_zoom', 'green', 'red', 'blue', 'black', 'Config', 'kernels', 'numkernels',
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
-                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue']
+                 'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue',
+                 'xormask1', 'xormask2']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -63,7 +64,9 @@ class Settings(object):
         self.loop = True
         self.run = True
         self.raspicam = False
-        self.xorvalue = np.uint8(0)
+        self.xorvalue = False
+        self.xormask1 = None
+        self.xormask2 = None
 
         # opencv properties
         self.cap_prop_frame_width = 3
