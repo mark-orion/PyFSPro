@@ -209,6 +209,8 @@ class Settings(object):
         self.Config.set('Processor', 'ind_zoom', widget.indzoom_wid.value)
         self.Config.set('Processor', 'dout', widget.dout_wid.state)
         self.Config.set('Processor', 'actuator', widget.actuator_wid.state)
+        self.Config.set('Processor', 'actuator_class', self.actuator_class)
+        self.Config.set('Processor', 'actuator_parm', self.actuator_parm)
         self.Config.set('Processor', 'override', widget.override_wid.state)
 
         # Section 'Output'
@@ -247,6 +249,8 @@ class Settings(object):
             # Section 'Processor'
             self.blr_strength = int(
                 self.Config.get('Processor', 'blr_strength'))
+            self.actuator_class = self.Config.get('Processor', 'actuator_class')
+            self.actuator_parm = self.Config.get('Processor', 'actuator_parm')
             # Section 'Output'
             self.output_dir = self.Config.get('Output', 'output_dir')
             self.dnz_out_str = float(self.Config.get('Output', 'dnz_out_str'))
