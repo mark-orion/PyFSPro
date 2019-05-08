@@ -29,11 +29,11 @@ os.environ["KIVY_NO_CONSOLELOG"] = "1"
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import Image
+#from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.properties import ObjectProperty
-from kivy.properties import NumericProperty
+#from kivy.properties import NumericProperty
 from kivy.animation import Animation
 
 # local imports
@@ -130,6 +130,8 @@ class PyFSPro(App):
         self.cnf.imagestack.offset_out = self.cnf.offset_out
         self.cnf.imagestack.setKernel(self.cnf.blr_strength)
         self.cnf.imagestack.dyn_dark = self.cnf.dyn_dark
+        if self.cnf.dyn_dark == 3:
+            self.cnf.imagestack.loadDark(np.full((self.cnf.video_height, self.cnf.video_width), self.cnf.imagestack.default_value, np.uint8))
         self.cnf.flt_inp_kernel = self.cnf.inp_kernel * self.cnf.flt_inp_strength
         self.cnf.flt_out_kernel = self.cnf.out_kernel * self.cnf.flt_out_strength
         self.imageinput.loop = self.cnf.loop
@@ -165,9 +167,9 @@ class PyFSPro(App):
     def inp_callback(self, instance, value):
         if value == 'normal':
             self.cnf.show_inp = False
-            self.showiimage = self.background
+            self.showiimage = self.cnf.background
             self.cnf.rootwidget.iimage_wid.texture = self.img2tex(
-                self.background)
+                self.cnf.background)
             self.cnf.rootwidget.iimage_wid.pos_hint = {'top': 3}
         else:
             self.cnf.show_inp = True
@@ -302,10 +304,12 @@ class PyFSPro(App):
         self.apply_settings()
 
     def dark_callback(self, instance, value):
-        if value == 'down':
-            self.cnf.dyn_dark = True
-        else:
-            self.cnf.dyn_dark = False
+        if value == 'DynDark':
+            self.cnf.dyn_dark = 1
+        elif value == 'Static':
+            self.cnf.dyn_dark = 2
+        elif value == 'Grey':
+            self.cnf.dyn_dark = 3
         self.apply_settings()
 
     def reset_callback(self, instance):
@@ -752,7 +756,7 @@ class PyFSPro(App):
         self.cnf.rootwidget.oflt_wid.bind(text=self.oflt_callback)
         self.cnf.rootwidget.stack_wid.bind(value=self.stack_callback)
         self.cnf.rootwidget.proc_wid.bind(text=self.proc_callback)
-        self.cnf.rootwidget.dark_wid.bind(state=self.dark_callback)
+        self.cnf.rootwidget.dark_wid.bind(text=self.dark_callback)
         self.cnf.rootwidget.reset_wid.bind(on_release=self.reset_callback)
         self.cnf.rootwidget.dout_wid.bind(state=self.dout_callback)
         self.cnf.rootwidget.zero_wid.bind(on_release=self.zerooutput_callback)
@@ -880,7 +884,7 @@ class PyFSPro(App):
         self.clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(4, 4))
 
         # prepre background image
-        self.background = np.full((self.cnf.video_height, self.cnf.video_width, 3),
+        self.cnf.background = np.full((self.cnf.video_height, self.cnf.video_width, 3),
                                   self.cnf.imagestack.default_value, np.uint8)
         self.generate_xormasks()
 
@@ -943,7 +947,7 @@ class PyFSPro(App):
                 self.cnf.x_avg, self.cnf.y_avg, self.cnf.full_avg)
             if self.cnf.indzoominc != 0 and not self.cnf.trfilter:
                 zoom = self.cnf.rootwidget.indzoom_wid.value
-                zoom = np.clip(zoom + self.cnf.indzoominc, 1, 400)
+                zoom = np.clip(zoom + self.cnf.indzoominc, 1, 4000)
                 self.cnf.rootwidget.indzoom_wid.value = float(zoom)
 
     def process_thread(self):

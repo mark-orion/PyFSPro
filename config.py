@@ -33,7 +33,7 @@ class Settings(object):
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
                  'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue',
-                 'xormask1', 'xormask2']
+                 'xormask1', 'xormask2', 'background']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -61,6 +61,7 @@ class Settings(object):
         self.show_ihist = False
         self.show_ohist = False
         self.out = None
+        self.background = None
         self.loop = True
         self.run = True
         self.raspicam = False
@@ -157,7 +158,7 @@ class Settings(object):
         self.out_kernel = None
         self.mode_prc = 0
         self.pseudoc = False
-        self.dyn_dark = True
+        self.dyn_dark = 1
         self.gain_inp = 1.0
         self.gain_out = 1.0
         self.offset_inp = 0
@@ -201,7 +202,7 @@ class Settings(object):
 
         # Section 'Processor'
         self.Config.set('Processor', 'mode_prc', widget.proc_wid.text)
-        self.Config.set('Processor', 'dyn_dark', widget.dark_wid.state)
+        self.Config.set('Processor', 'dyn_dark', widget.dark_wid.text)
         self.Config.set('Processor', 'blr_strength', self.blr_strength)
         self.Config.set('Processor', 'stack_size', widget.stack_wid.value)
         self.Config.set('Processor', 'ind_zoom', widget.indzoom_wid.value)
@@ -276,7 +277,7 @@ class Settings(object):
             widget.ichan_wid.text = self.Config.get('Input', 'color_channel')
             # Section 'Processor'
             widget.proc_wid.text = self.Config.get('Processor', 'mode_prc')
-            widget.dark_wid.state = self.Config.get('Processor', 'dyn_dark')
+            widget.dark_wid.text = self.Config.get('Processor', 'dyn_dark')
             widget.stack_wid.value = int(
                 self.Config.get('Processor', 'stack_size'))
             widget.indzoom_wid.value = float(

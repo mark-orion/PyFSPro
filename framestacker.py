@@ -88,7 +88,7 @@ class FrameStack(object):
                            self.frame_stack[self.index] + self.frame)
         self.frame_stack[self.index] = self.frame
         self.avg = self.sum_frames / self.stackrange
-        if self.dyn_dark:
+        if self.dyn_dark == 1:
             self.dark_frame = self.avg
         self.sqd = np.square(self.frame - self.dark_frame)
         self.sum_sqd = self.sum_sqd - self.sqd_stack[self.index] + self.sqd
@@ -146,10 +146,11 @@ class FrameStack(object):
     def resetCUMSUM(self):
         self.cumsum = self.emptyFrame(self.default_value,
                                       self.upper_offset, self.lower_offset)
-
+    '''
     def useDark(self):
         self.dyn_dark = not self.dyn_dark
         return self.dyn_dark
+    '''
 
     def loadDark(self, frame):
         self.dark_frame = np.float32(frame)
