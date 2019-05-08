@@ -155,7 +155,6 @@ class Paint(object):
             self.output()
             self.sendrequest.clear()
 
-"""
 class Mouse:
     def __init__(self, cnf):
         self.name = 'Mouse'
@@ -215,9 +214,8 @@ class Mouse:
             self.sendrequest.wait()
             self.set_pointer()
             self.sendrequest.clear()
-"""
 
-"""
+
 class OSC:
     def __init__(self, cnf):
         self.name = 'OSC'
@@ -290,7 +288,7 @@ class OSC:
         if self.jy != self.joldy:
             liblo.send(self.oscclient, "/joyy", self.jy)
             self.joldy = self.jy
-"""
+
 
 class STSpilot:
     def __init__(self, cnf):

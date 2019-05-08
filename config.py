@@ -33,7 +33,7 @@ class Settings(object):
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
                  'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue',
-                 'xormask1', 'xormask2', 'background']
+                 'xormask1', 'xormask2', 'background', 'actuator_class']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -97,6 +97,7 @@ class Settings(object):
         self.out_xscale = 0
         self.out_yscale = 0
         self.actuator = False
+        self.actuator_class = 'Dummy'
         self.actuator_parm = '127.0.0.1:9003'
         self.dout_active = False
         self.override_active = False

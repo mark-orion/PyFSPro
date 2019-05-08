@@ -577,6 +577,8 @@ class PyFSPro(App):
             self.cnf.video_src = self.args.input_source
         if self.args.frames_second is not None:
             self.cnf.proc_fps = 1.0 / float(self.args.frames_second)
+        if self.args.actuator_class is not None:
+            self.cnf.actuator_class = self.args.actuator_class
         if self.args.actuator_parm is not None:
             self.cnf.actuator_parm = self.args.actuator_parm
         if self.args.single_thread:
@@ -785,6 +787,8 @@ class PyFSPro(App):
         # command line parser
         parser = argparse.ArgumentParser(
             description='Python Frame Sequence Processor', add_help=True)
+        parser.add_argument('-ac', '--actuator_class',
+                            help='Load actuator class from actuators.py: (Defaults to Dummy)')
         parser.add_argument('-ap', '--actuator_parm',
                             help='Parameter (IP etc.) for actuator')
         parser.add_argument('-bg', '--background_source',
@@ -901,7 +905,13 @@ class PyFSPro(App):
 
         # load actuator
         self.oimage_size_callback(None, self.cnf.rootwidget.oimage_wid.size)
-        self.cnf.act = acts.STSpilot(self.cnf)
+        try:
+            class_ = getattr(acts, self.cnf.actuator_class)
+            self.cnf.act = class_(self.cnf)
+        except:
+            self.cnf.actuator_class = 'Dummy'
+            class_ = getattr(acts, self.cnf.actuator_class)
+            self.cnf.act = class_(self.cnf)
 
         # update UI and settings
         self.apply_ui_args()
