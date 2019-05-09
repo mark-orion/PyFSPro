@@ -90,12 +90,13 @@ class FrameStack(object):
         self.avg = self.sum_frames / self.stackrange
         if self.dyn_dark == 1:
             self.dark_frame = self.avg
-        self.sqd = np.square(self.frame - self.dark_frame)
+        self.frame = self.frame - self.dark_frame
+        self.sqd = np.square(self.frame)
         self.sum_sqd = self.sum_sqd - self.sqd_stack[self.index] + self.sqd
         self.sqd_stack[self.index] = self.sqd
         self.var = self.sum_sqd / self.stackrange
         self.sd = np.sqrt(self.var)
-        self.z = np.square((self.frame - self.dark_frame) / self.sd) - 1
+        self.z = np.square(self.frame / self.sd) - 1
         if self.index >= self.stackrange - 1:
             self.index = 0
             self.filling_stack = False
@@ -116,7 +117,7 @@ class FrameStack(object):
         return self.postProcess(np.sqrt(self.var))
 
     def getDIFF(self):
-        return self.postProcess(abs(self.inp_frame - self.dark_frame))
+        return self.postProcess(abs(self.frame))
 
     def getCUMSUM(self):
         self.cumsum = self.cumsum + self.z

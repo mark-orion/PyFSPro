@@ -132,6 +132,8 @@ class PyFSPro(App):
         self.cnf.imagestack.dyn_dark = self.cnf.dyn_dark
         if self.cnf.dyn_dark == 3:
             self.cnf.imagestack.loadDark(np.full((self.cnf.video_height, self.cnf.video_width), self.cnf.imagestack.default_value, np.uint8))
+        if self.cnf.dyn_dark == 4:
+            self.cnf.imagestack.loadDark(np.full((self.cnf.video_height, self.cnf.video_width), 0, np.uint8))
         self.cnf.flt_inp_kernel = self.cnf.inp_kernel * self.cnf.flt_inp_strength
         self.cnf.flt_out_kernel = self.cnf.out_kernel * self.cnf.flt_out_strength
         self.imageinput.loop = self.cnf.loop
@@ -310,6 +312,10 @@ class PyFSPro(App):
             self.cnf.dyn_dark = 2
         elif value == 'Grey':
             self.cnf.dyn_dark = 3
+        elif value == 'Dark-OFF':
+            self.cnf.dyn_dark = 4
+        else:
+            self.cnf.rootwidget.dark_wid.text = 'Dark-OFF'
         self.apply_settings()
 
     def reset_callback(self, instance):
@@ -670,6 +676,8 @@ class PyFSPro(App):
             self.cnf.rootwidget.out_wid.state = 'normal'
         if self.args.trf_mode is not None:
             self.cnf.rootwidget.tfl_wid.text = self.args.tfl_mode
+        if self.args.darkframe_mode is not None:
+            self.cnf.rootwidget.dark_wid.text = self.args.darkframe_mode
 
     def create_output(self):
         self.cnf.oimage = self.dsp.copy()
@@ -797,6 +805,8 @@ class PyFSPro(App):
                             help='Blur Strength (Kernel Size')
         parser.add_argument('-c', '--config_file',
                             help='Load Configuration from file')
+        parser.add_argument('-dm', '--darkframe_mode',
+                            help='Darkframe processing mode: Dark-OFF, DynDark, Static, Grey')
         parser.add_argument('-fx', '--flip_x', action='store_true',
                             help='Flip around X axis')
         parser.add_argument('-fy', '--flip_y', action='store_true',

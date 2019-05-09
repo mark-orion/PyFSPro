@@ -24,19 +24,19 @@ The 'doc' folder contains the flow diagram and pattern files that can be used fo
 * framestacker.py library can be re-used in other projects. It does not depend on OpenCV and only requires Numpy.
 
 ## Image enhancement and analysis functions
-* Image integration (rolling average)
+* Image integration (rolling average).
 * Image difference to fixed reference (dark) frame or rolling average.
 * Cumulative deviation of stacked images.
 * Convolution filters with customizable kernels.
-* Image stabilizer (experimental)
-* Automatic or manual gain and offset
-* Histogram Equalization
-* Contrast Limited Adaptive Histogram Equalization (CLAHE)
+* Image stabilizer (experimental).
+* Automatic or manual gain and offset.
+* Histogram Equalization.
+* Contrast Limited Adaptive Histogram Equalization (CLAHE).
 * Blurring
 * DeNoising
 * Pseudo Color
-* Histogram plot of input and output data (good for camera calibration)
-* Transient filter (display or save frames that "stick out" of the sequence)
+* Histogram plot of input and output data (good for camera calibration).
+* Transient filter (display or save frames that "stick out" of the sequence).
 
 ## Requirements
 * Please refer to INSTALL.win for Windows installation instructions.
@@ -73,24 +73,24 @@ The GUI is divided in five main sections:
 * Right bar - output and post processing chain.
 
 ## Description of GUI control elements
-* Input / Output - show / hide input or output video
+* Input / Output - show / hide input or output video.
 * \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output). Looping and pausing at end are not working with a camera as input source.
-* PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM)
-* DynDark - (enabled by default) use stack average as dark frame for DIFF and CUMSUM. The moment the button gets disabled, the current frame will be used as fixed dark frame.
+* PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM).
+* Dark-OFF - choose darkframe mode for DIFF and CUMSUM (OFF, DynDark, Static, Grey). DynDark uses rolling average and Static uses the current frame as dark frame.
 * Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
-* TR-OFF - Transient Filter (OFF, Rising Intensity Slope, Falling Intensity Slope)
+* TR-OFF - Transient Filter (OFF, Rising Intensity Slope, Falling Intensity Slope).
 * The top slider sets the sensitivity of the vector output or the triggerlevel in transient mode.
 * The bottom slider sets the stack size. The number of frames is displayed to the right. It turns green when the stack is full and rolling.
 * X / Y - flip image around X or Y axis.
 * GREY - click to change color palette from greyscale to pseudo color.
 * EQ-OFF - choose equalization mode (Histogram or CLAHE - Contrast Limited Adaptive Histogram Equalization).
-* Denoise - denoising filter (very CPU intensive!)
+* Denoise - denoising filter (very CPU intensive!).
 * FLT-OFF - choose convolution filter kernel defined in filters.py.
 * LOCK - experimental image stabilizer.
 * G, O, Auto - the sliders set Gain and Offset (contrast, brightness). Auto finds the optimum values for best dynamic resolution.
 * Blur - toggle blurring.
 * Hist - show input or output histogram (useful for camera adjustment).
-* BW - choose channel from various color spaces or LSB mask for random number generation (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX)  
+* BW - choose channel from various color spaces or LSB mask for random number generation (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX).  
 RND returns LSB * 127  
 RNDX works like RND but the output is XOR masked with a "chequerboard" array of ones and zeroes. In order to reduce bias, an inverted array is used for every second frame.    
 * Save Config - save current configuration. The default save location is ./output/ and can be changed with the -od / --output_dir option.
