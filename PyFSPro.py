@@ -687,9 +687,11 @@ class PyFSPro(App):
         else:
             self.cnf.out = cv2.cvtColor(self.cnf.oimage, cv2.COLOR_GRAY2BGR)
 
-        # get output vector
-        self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(
-            self.cnf.imagestack.float_out)
+        # get output vector float without post processing
+        self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(self.cnf.imagestack.float_out)
+
+        # get output vector integer after post processing chain
+        #self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(np.float32(self.cnf.oimage))
 
         # record image sequence or video
         if self.cnf.recordi:

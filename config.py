@@ -100,7 +100,7 @@ class Settings(object):
         self.actuator_class = 'Dummy'
         self.actuator_parm = '127.0.0.1:9003'
         self.dout_active = False
-        self.override_active = False
+        self.override_active = True
 
         # joystick Configuration
         self.joyx = 0
@@ -159,7 +159,7 @@ class Settings(object):
         self.out_kernel = None
         self.mode_prc = 0
         self.pseudoc = False
-        self.dyn_dark = 1
+        self.dyn_dark = 4
         self.gain_inp = 1.0
         self.gain_out = 1.0
         self.offset_inp = 0
