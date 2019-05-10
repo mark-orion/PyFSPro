@@ -75,7 +75,8 @@ The GUI is divided in five main sections:
 ## Description of GUI control elements
 * Input / Output - show / hide input or output video.
 * \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output). Looping and pausing at end are not working with a camera as input source.
-* PROC-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM).
+* Proc-OFF - choose processing mode (OFF, AVG, DIFF, CUM-Z).  
+AVG: Average of whole stack. DIFF: Frame - Darkframe. CUM-Z: Cumulative sum of Z-Scores.  
 * Dark-OFF - choose darkframe mode for DIFF and CUMSUM (OFF, DynDark, Static, Grey). DynDark uses rolling average and Static uses the current frame as dark frame.
 * Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
 * TR-OFF - Transient Filter (OFF, Rising Intensity Slope, Falling Intensity Slope).

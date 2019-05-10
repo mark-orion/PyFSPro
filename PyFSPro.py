@@ -299,7 +299,7 @@ class PyFSPro(App):
             self.cnf.mode_prc = 1
         elif value == 'DIFF':
             self.cnf.mode_prc = 2
-        elif value == 'CUMSUM':
+        elif value == 'CUM-Z':
             self.cnf.mode_prc = 3
         else:
             self.cnf.mode_prc = 0
@@ -863,7 +863,7 @@ class PyFSPro(App):
         parser.add_argument('-ps', '--processing_state',
                             help='Processing State: PLAY, LOOP, PAUSE')
         parser.add_argument('-pm', '--processing_mode',
-                            help='Set Processing Mode: AVG, DIFF, CUMSUM')
+                            help='Set Processing Mode: AVG, DIFF, CUM-Z')
         parser.add_argument('-pz', '--stack_size',
                             help='Image Stacking (No. of frames to stack)')
         parser.add_argument('-st', '--single_thread', action='store_true',
