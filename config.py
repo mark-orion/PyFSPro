@@ -97,7 +97,7 @@ class Settings(object):
         self.out_xscale = 0
         self.out_yscale = 0
         self.actuator = False
-        self.actuator_class = 'Dummy'
+        self.actuator_class = 'Paint'
         self.actuator_parm = '127.0.0.1:9003'
         self.dout_active = False
         self.override_active = True

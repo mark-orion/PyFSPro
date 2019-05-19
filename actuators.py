@@ -9,8 +9,6 @@ Various actuator classes to provide an interface to external hard- and software.
 The 'dummy' class can be used for testing and training.
 """
 
-import numpy as np
-import cv2
 from threading import Thread, Event
 from kivy.graphics import Line, Color
 from kivy.graphics.instructions import InstructionGroup
@@ -18,6 +16,7 @@ from kivy.graphics.instructions import InstructionGroup
 import requests
 import pyautogui
 import liblo
+import time
 
 class Dummy:
     def __init__(self, cnf):
@@ -51,10 +50,10 @@ class Dummy:
         self.joldy = self.jy
 
     def start(self):
-        print('start actuator')
+        return
 
     def stop(self):
-        print('stop actuator')
+        return
 
     def shutdown(self):
         self.actuator_thread_run = False
@@ -71,7 +70,7 @@ class Dummy:
         print('stop videofeed')
 
     def output(self):
-        print(self.x, self.y, self.z)
+        print(str(time.time()) + ',' + time.strftime("%d.%m.%Y %H:%M:%S") + ',' + str(self.x) + ',' + str(self.y) + ',' + str(self.z))
 
     def request_thread(self):
         while self.actuator_thread_run:

@@ -23,7 +23,7 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-#os.environ["KIVY_NO_CONSOLELOG"] = "1"
+os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -508,7 +508,7 @@ class PyFSPro(App):
             if self.cnf.show_z:
                 self.cnf.rootwidget.zindicator_wid.text = str(int(outz))
             if self.cnf.log and not self.cnf.trfilter:
-                logstring = str(time.time()) + ',' + time.strftime("%Y%m%d%H%M%S") + ',' + str(outx) + ',' + str(
+                logstring = str(time.time()) + ',' + time.strftime("%d.%m.%Y %H:%M:%S") + ',' + str(outx) + ',' + str(
                     outy) + ',' + str(outz) + ',' + str(self.cnf.joyx) + ',' + str(self.cnf.joyy) + '\n'
                 if self.cnf.logfile == 'STDOUT':
                     sys.stdout.write(logstring)
