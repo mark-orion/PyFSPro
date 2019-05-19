@@ -33,7 +33,7 @@ class Settings(object):
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
                  'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue',
-                 'xormask1', 'xormask2', 'background', 'actuator_class']
+                 'xormask1', 'xormask2', 'background', 'actuator_class', 'vectype']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -101,6 +101,7 @@ class Settings(object):
         self.actuator_parm = '127.0.0.1:9003'
         self.dout_active = False
         self.override_active = True
+        self.vectype = 1
 
         # joystick Configuration
         self.joyx = 0
@@ -208,6 +209,7 @@ class Settings(object):
         self.Config.set('Processor', 'stack_size', widget.stack_wid.value)
         self.Config.set('Processor', 'ind_zoom', widget.indzoom_wid.value)
         self.Config.set('Processor', 'dout', widget.dout_wid.state)
+        self.Config.set('Processor', 'vectype', widget.vectype_wid.text)
         self.Config.set('Processor', 'actuator', widget.actuator_wid.state)
         self.Config.set('Processor', 'actuator_class', self.actuator_class)
         self.Config.set('Processor', 'actuator_parm', self.actuator_parm)
@@ -283,6 +285,7 @@ class Settings(object):
             # Section 'Processor'
             widget.proc_wid.text = self.Config.get('Processor', 'mode_prc')
             widget.dark_wid.text = self.Config.get('Processor', 'dyn_dark')
+            widget.vectype_wid.text = self.Config.get('Processor', 'vectype')
             widget.stack_wid.value = int(
                 self.Config.get('Processor', 'stack_size'))
             widget.indzoom_wid.value = float(

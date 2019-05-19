@@ -23,7 +23,7 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-os.environ["KIVY_NO_CONSOLELOG"] = "1"
+#os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -103,6 +103,7 @@ class MyScreen(BoxLayout):
     ostab_wid = ObjectProperty()
     trf_wid = ObjectProperty()
     playmode_wid = ObjectProperty()
+    vectype_wid = ObjectProperty()
 
 
 class PyFSPro(App):
@@ -463,6 +464,14 @@ class PyFSPro(App):
             self.cnf.run = False
         self.imageinput.loop = self.cnf.loop
 
+    def vectype_callback(self, instance, value):
+        if value == 'Datamode\nAVG':
+            self.cnf.vectype = 1
+        elif value == 'Datamode\nCUM-Z':
+            self.cnf.vectype = 2
+        else:
+            self.cnf.rootwidget.vectype_wid.text = 'Datamode\nAVG'
+
     def img2tex(self, img):
         buf1 = cv2.flip(img, 0)
         buf = buf1.tostring()
@@ -678,6 +687,8 @@ class PyFSPro(App):
             self.cnf.rootwidget.tfl_wid.text = self.args.tfl_mode
         if self.args.darkframe_mode is not None:
             self.cnf.rootwidget.dark_wid.text = self.args.darkframe_mode
+        if self.args.vector_mode is not None:
+            self.cnf.rootwidget.vectype_wid.text = 'Datamode\n' + self.args.vector_mode
 
     def create_output(self):
         self.cnf.oimage = self.dsp.copy()
@@ -687,11 +698,11 @@ class PyFSPro(App):
         else:
             self.cnf.out = cv2.cvtColor(self.cnf.oimage, cv2.COLOR_GRAY2BGR)
 
-        # get output vector float without post processing
-        self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(self.cnf.imagestack.float_out)
-
-        # get output vector integer after post processing chain
-        #self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVECTOR(np.float32(self.cnf.oimage))
+        # get output vector
+        if self.cnf.vectype == 1:
+            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorAVG(self.cnf.imagestack.float_out)
+        else:
+            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorCUMZ(self.cnf.imagestack.float_out)
 
         # record image sequence or video
         if self.cnf.recordi:
@@ -790,6 +801,7 @@ class PyFSPro(App):
         self.cnf.rootwidget.istab_wid.bind(state=self.istab_callback)
         self.cnf.rootwidget.ostab_wid.bind(state=self.ostab_callback)
         self.cnf.rootwidget.oimage_wid.bind(size=self.oimage_size_callback)
+        self.cnf.rootwidget.vectype_wid.bind(text=self.vectype_callback)
         Window.bind(on_joy_axis=self.on_joy_axis)
         Window.bind(on_joy_hat=self.on_joy_hat)
         Window.bind(on_joy_button_down=self.on_joy_button_down)
@@ -798,7 +810,7 @@ class PyFSPro(App):
         parser = argparse.ArgumentParser(
             description='Python Frame Sequence Processor', add_help=True)
         parser.add_argument('-ac', '--actuator_class',
-                            help='Load actuator class from actuators.py: (Defaults to Dummy)')
+                            help='Load actuator class from actuators.py: (Defaults to Paint)')
         parser.add_argument('-ap', '--actuator_parm',
                             help='Parameter (IP etc.) for actuator')
         parser.add_argument('-bg', '--background_source',
@@ -872,6 +884,8 @@ class PyFSPro(App):
                             help='Set Transient Filter Mode: Rise, Fall')
         parser.add_argument('-tft', '--trf_trigger',
                             help='Set Transient Filter Triggerlevel')
+        parser.add_argument('-vm', '--vector_mode',
+                            help='Set Vector Display / Data Mode: AVG, CUM-Z')
         parser.add_argument('-vz', '--vector_zoom',
                             help='Set Vector Display / Output Zoom')
 
@@ -921,7 +935,7 @@ class PyFSPro(App):
             class_ = getattr(acts, self.cnf.actuator_class)
             self.cnf.act = class_(self.cnf)
         except:
-            self.cnf.actuator_class = 'Dummy'
+            self.cnf.actuator_class = 'Paint'
             class_ = getattr(acts, self.cnf.actuator_class)
             self.cnf.act = class_(self.cnf)
 

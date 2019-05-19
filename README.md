@@ -17,8 +17,8 @@ The 'doc' folder contains the flow diagram and pattern files that can be used fo
 * Output to Screen, Image sequence or Video file.
 * Input channel can be greyscale or extracted from RGB, HSV or YCrCb color space.
 * Input and Output processing chains with basic image enhancement functions.
-* Vectorscope for the visualization of small changes in video stream.
-* Actuators can control third party applications with vectorscope data.
+* Vector display for the visualization of small changes in video stream.
+* Actuators can control third party applications with vector data.
 * Parameters can be set through the UI, command line options and configuration files.
 * Most Parameters can be changed on the fly via the Kivy user interface.
 * framestacker.py library can be re-used in other projects. It does not depend on OpenCV and only requires Numpy.
@@ -96,7 +96,11 @@ RND returns LSB * 127
 RNDX works like RND but the output is XOR masked with a "chequerboard" array of ones and zeroes. In order to reduce bias, an inverted array is used for every second frame.    
 * Save Config - save current configuration. The default save location is ./output/ and can be changed with the -od / --output_dir option.
 * Rec-Off - save the output stream as video or image sequence. The default save location is ./output/ and can be changed with the -od / --output_dir option.
-* HUD - Show vectorscope marker on the screen.
+* Data Display - Show vector scope marker on the screen.
+* Datamode - choose vector data processing mode (AVG, CUM-Z).  
+AVG: Average. CUM-Z: Cumulative sum of Z-Scores.  
+For processing the output frame is divided into four regions: Upper half, Lower half, Left half, Right half.  
+Each region is processed separately before the difference between left/right and upper/lower is used as XY vector.  
 * Data Output (1) - Enable vector data processing. (1) = Joystick / Gamepad button 1.
 * Zero Output (2) - Center vectorscope marker on screen.
 * Joystick Override (3) - Allow Joystick to control vector output.

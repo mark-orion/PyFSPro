@@ -54,6 +54,7 @@
     istab_wid: my_istab
     playmode_wid: my_playmode
     trf_wid: my_trf
+    vectype_wid: my_vectype
 
     FloatLayout:
         FloatLayout:
@@ -322,7 +323,11 @@
                 values: ('Rec-OFF', 'Sequence', 'Video')
             ToggleButton:
                 id: my_vec
-                text: 'HUD'
+                text: 'Data\nDisplay'
+            Spinner:
+                id: my_vectype
+                text: 'Datamode\nAVG'
+                values: ('Datamode\nAVG', 'Datamode\nCUM-Z')
             ToggleButton:
                 id: my_dout
                 text: 'Data\nOutput (1)'

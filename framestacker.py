@@ -19,7 +19,8 @@ class FrameStack(object):
                  'center_x', 'center_y', 'kernel_size',
                  'ulimit', 'llimit', 'pixelvalue', 'kernel_value', 'raw_inp', 'frame', 'tmp_frame',
                  'inp_frame', 'sum_frames', 'frame_stack', 'avg', 'sqd', 'sum_sqd', 'sqd_stack',
-                 'dark_frame', 'var', 'sd', 'z', 'cumsum', 'full_avg', 'left_avg', 'right_avg',
+                 'dark_frame', 'var', 'sd', 'z', 'cumsum', 'left', 'right', 'upper', 'lower', 'full_avg', 'left_avg',
+                 'right_avg', 'left_cumz', 'right_cumz', 'upper_cumz', 'lower_cumz',
                  'upper_avg', 'lower_avg', 'x_avg', 'y_avg', 'raw_out', 'float_out', 'r', 'c',
                  'max_inp', 'min_inp', 'max_out', 'min_out', 'kernel', 'i', 'proc_out',
                  'initframe', 'prefilter', 'trfilter', 'trpre', 'trflt']
@@ -31,6 +32,10 @@ class FrameStack(object):
         self.flip_y = False
         self.blr_inp = False
         self.blr_out = False
+        self.left_cumz = 0
+        self.right_cumz = 0
+        self.upper_cumz = 0
+        self.lower_cumz = 0
         self.max_value = 255
         self.default_value = 127.5
         self.min_value = 0
@@ -117,16 +122,43 @@ class FrameStack(object):
         self.cumsum = self.cumsum + self.z
         return self.postProcess(self.cumsum)
 
-    def getVECTOR(self, img):
+    def setVECROI(self, img):
+        self.left = img[0:self.height,0:self.center_x]
+        self.right = img[0:self.height,self.center_x:self.width]
+        self.upper = img[0:self.center_y,0:self.width]
+        self.lower = img[self.center_y:self.height,0:self.width]
+        return
+
+    def getVectorCUMZ(self, img):
+        self.setVECROI(img)
         self.full_avg = np.nanmean(img)
-        self.left_avg = np.nanmean(img[0:self.height,
-                                   0:self.center_x])
-        self.right_avg = np.nanmean(img[0:self.height,
-                                    self.center_x:self.width])
-        self.upper_avg = np.nanmean(img[0:self.center_y,
-                                    0:self.width])
-        self.lower_avg = np.nanmean(img[self.center_y:self.height,
-                                    0:self.width])
+        self.left_avg = np.nanmean(self.left)
+        self.right_avg = np.nanmean(self.right)
+        self.upper_avg = np.nanmean(self.upper)
+        self.lower_avg = np.nanmean(self.lower)
+        left_diff = self.left - self.left_avg
+        left_sd = np.sqrt(np.sum(np.square(left_diff)) / self.left.size)
+        self.left_cumz += np.sum(left_diff / left_sd)
+        right_diff = self.right - self.right_avg
+        right_sd = np.sqrt(np.sum(np.square(right_diff)) / self.right.size)
+        self.right_cumz += np.sum(right_diff / right_sd)
+        upper_diff = self.upper - self.upper_avg
+        upper_sd = np.sqrt(np.sum(np.square(upper_diff)) / self.upper.size)
+        self.upper_cumz += np.sum(upper_diff / upper_sd)
+        lower_diff = self.lower - self.lower_avg
+        lower_sd = np.sqrt(np.sum(np.square(lower_diff)) / self.lower.size)
+        self.lower_cumz += np.sum(lower_diff / lower_sd)
+        self.x_avg = self.right_cumz - self.left_cumz
+        self.y_avg = self.upper_cumz - self.lower_cumz
+        return self.full_avg, self.x_avg, self.y_avg
+
+    def getVectorAVG(self, img):
+        self.setVECROI(img)
+        self.full_avg = np.nanmean(img)
+        self.left_avg = np.nanmean(self.left)
+        self.right_avg = np.nanmean(self.right)
+        self.upper_avg = np.nanmean(self.upper)
+        self.lower_avg = np.nanmean(self.lower)
         self.x_avg = self.right_avg - self.left_avg
         self.y_avg = self.upper_avg - self.lower_avg
         return self.full_avg, self.x_avg, self.y_avg
@@ -147,7 +179,7 @@ class FrameStack(object):
     def postProcess(self, raw_out):
         self.raw_out = raw_out
         self.float_out = (self.raw_out + self.offset_out) * self.gain_out
-        self.proc_out = np.clip(self.float_out, self.min_value,self.max_value)
+        self.proc_out = np.clip(self.float_out, self.min_value, self.max_value)
         if self.blr_out:
             for self.r in range(self.height):
                 self.proc_out[self.r, :] = np.convolve(
