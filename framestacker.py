@@ -53,6 +53,7 @@ class FrameStack(object):
         self.kernel_size = 7
         self.kernel = []
         self.setKernel(self.kernel_size)
+        self.initframe = self.uniFrame(0)
         self.initStack(self.stackrange)
         self.resetCUMSUM()
 
@@ -203,19 +204,34 @@ class FrameStack(object):
         offset_out = -self.min_out
         return gain_out, offset_out
 
+    def resetStack(self):
+        for self.i in range(self.stackrange):
+            self.frame_stack[self.i] = self.initframe
+            self.sqd_stack[self.i] = self.initframe
+        self.frame = self.initframe
+        self.inp_frame = self.initframe
+        self.raw_inp = self.initframe
+        self.raw_out = self.initframe
+        self.sum_frames = self.initframe
+        self.sum_sqd = self.initframe
+        self.z = self.initframe
+        self.prefilter = self.initframe
+        self.trfilter = self.initframe
+        self.index = 0
+        self.resetCUMSUM()
+        self.filling_stack = True
+
     def initStack(self, stackrange):
         self.stackrange = stackrange
         if self.stackrange > self.stacksize:
             self.stackrange = self.stacksize
         if self.stackrange < 1:
             self.stackrange = 1
-        self.initframe = self.uniFrame(0)
         self.dark_frame = self.initframe
         self.frame = self.initframe
         self.inp_frame = self.initframe
         self.raw_inp = self.initframe
         self.raw_out = self.initframe
-        self.cumsum = self.initframe
         self.sum_frames = self.initframe
         self.sum_sqd = self.initframe
         self.z = self.initframe

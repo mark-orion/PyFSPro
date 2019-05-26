@@ -180,10 +180,16 @@ class PyFSPro(App):
             self.cnf.show_inp = True
             self.cnf.rootwidget.iimage_wid.pos_hint = {'top': 0.9}
 
-    def iauto_callback(self, instance):
-        gain, offset = self.cnf.imagestack.autoInpGain()
-        self.cnf.rootwidget.igain_wid.value = float(gain)
-        self.cnf.rootwidget.ioffset_wid.value = float(offset)
+    def iauto_callback(self, instance, value):
+        if value == 'down':
+            gain, offset = self.cnf.imagestack.autoInpGain()
+            self.cnf.rootwidget.igain_wid.value = float(gain)
+            self.cnf.rootwidget.ioffset_wid.value = float(offset)
+            self.cnf.rootwidget.iauto_wid.text = 'Reset'
+        else:
+            self.cnf.rootwidget.igain_wid.value = 1
+            self.cnf.rootwidget.ioffset_wid.value = 0
+            self.cnf.rootwidget.iauto_wid.text = 'Auto'
 
     def igain_callback(self, instance, value):
         self.cnf.gain_inp = value
@@ -237,10 +243,16 @@ class PyFSPro(App):
             self.cnf.show_out = False
             self.cnf.act.video_play()
 
-    def oauto_callback(self, instance):
-        gain, offset = self.cnf.imagestack.autoOutGain()
-        self.cnf.rootwidget.ogain_wid.value = float(gain)
-        self.cnf.rootwidget.ooffset_wid.value = float(offset)
+    def oauto_callback(self, instance, value):
+        if value == 'down':
+            gain, offset = self.cnf.imagestack.autoOutGain()
+            self.cnf.rootwidget.ogain_wid.value = float(gain)
+            self.cnf.rootwidget.ooffset_wid.value = float(offset)
+            self.cnf.rootwidget.oauto_wid.text = 'Reset'
+        else:
+            self.cnf.rootwidget.ogain_wid.value = 1
+            self.cnf.rootwidget.ooffset_wid.value = 0
+            self.cnf.rootwidget.oauto_wid.text = 'Auto'
 
     def ogain_callback(self, instance, value):
         self.cnf.gain_out = value
@@ -322,13 +334,7 @@ class PyFSPro(App):
         self.apply_settings()
 
     def reset_callback(self, instance):
-        if self.cnf.mode_prc == 3:
-            self.cnf.imagestack.resetCUMSUM()
-        else:
-            self.cnf.rootwidget.igain_wid.value = 1
-            self.cnf.rootwidget.ogain_wid.value = 1
-            self.cnf.rootwidget.ioffset_wid.value = 0
-            self.cnf.rootwidget.ooffset_wid.value = 0
+        self.cnf.imagestack.resetStack()
 
     def inifile_callback(self, instance):
         filename = self.cnf.output_dir + 'Settings-' + self.cnf.gettime() + '.conf'
@@ -767,10 +773,10 @@ class PyFSPro(App):
         self.cnf.rootwidget.vec_wid.bind(state=self.vec_callback)
         self.cnf.rootwidget.inp_wid.bind(state=self.inp_callback)
         self.cnf.rootwidget.out_wid.bind(state=self.out_callback)
-        self.cnf.rootwidget.iauto_wid.bind(on_release=self.iauto_callback)
+        self.cnf.rootwidget.iauto_wid.bind(state=self.iauto_callback)
         self.cnf.rootwidget.igain_wid.bind(value=self.igain_callback)
         self.cnf.rootwidget.ioffset_wid.bind(value=self.ioffset_callback)
-        self.cnf.rootwidget.oauto_wid.bind(on_release=self.oauto_callback)
+        self.cnf.rootwidget.oauto_wid.bind(state=self.oauto_callback)
         self.cnf.rootwidget.ogain_wid.bind(value=self.ogain_callback)
         self.cnf.rootwidget.ooffset_wid.bind(value=self.ooffset_callback)
         self.cnf.rootwidget.iblur_wid.bind(state=self.iblur_callback)
