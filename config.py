@@ -310,7 +310,7 @@ class Settings(object):
             widget.colors_wid.text = self.Config.get('Output', 'color_mode')
             widget.osd_wid.state = self.Config.get('Output', 'osd')
             widget.vec_wid.state = self.Config.get('Output', 'hud')
-            widget.trf_wid.text = self.Config.get('Output', 'trf')
+            widget.trf_wid.text = self.Config.get('Output', 'trf_mode')
 
         else:
             print('File ' + str(filename) + ' does not exist.')
