@@ -321,17 +321,18 @@ class STSpilot(object):
         self.videofeed = ':8080/stream/video.mjpeg'
         self.actuator_thread_run = True
         self.requestpayload = {'x': '0', 'y': '0'}
-        self.video.source = self.url + self.videofeed
-        self.video.state = 'stop'
         if not self.cnf.single_thread:
             self.requestthread = Thread(target=self.request_thread)
             self.requestthread.start()
 
     def video_play(self):
+        self.video.unload()
+        self.video.source = self.url + self.videofeed
         self.video.state = 'play'
 
     def video_stop(self):
         self.video.state = 'stop'
+        self.video.unload()
 
     def transmit(self, x, y, z, jx, jy):
         self.x = int(x)
