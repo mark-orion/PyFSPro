@@ -712,7 +712,7 @@ class PyFSPro(App):
         # record image sequence or video
         if self.cnf.recordi:
             self.cnf.output_file = "%s%s.bmp" % (self.cnf.image_dst, str(self.cnf.imgindx).zfill(8))
-            cv2.imwrite(self.cnf.output_fileself.cnf.out)
+            cv2.imwrite(self.cnf.output_file,self.cnf.out)
             self.cnf.imgindx += 1
         elif self.cnf.recordv:
             self.cnf.video.writeFrame(self.cnf.out)

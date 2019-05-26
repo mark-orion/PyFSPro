@@ -317,8 +317,8 @@ class STSpilot(object):
         self.reqtimeout = 1.0
         self.sendrequest = Event()
         self.url = 'http://' + self.cnf.actuator_parm
-        self.joystick = '/joystick'
-        self.videofeed = '/video_feed.mjpg'
+        self.joystick = ':5000/joystick'
+        self.videofeed = ':8080/stream/video.mjpeg'
         self.actuator_thread_run = True
         self.requestpayload = {'x': '0', 'y': '0'}
         self.video.source = self.url + self.videofeed
