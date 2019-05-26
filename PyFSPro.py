@@ -23,17 +23,17 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-os.environ["KIVY_NO_CONSOLELOG"] = "1"
+#os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-#from kivy.uix.image import Image
+# from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.properties import ObjectProperty
-#from kivy.properties import NumericProperty
+# from kivy.properties import NumericProperty
 from kivy.animation import Animation
 
 # local imports
@@ -107,6 +107,7 @@ class MyScreen(BoxLayout):
 
 
 class PyFSPro(App):
+
     title = 'Python Frame Sequence Processor'
 
     def on_stop(self):
@@ -132,7 +133,8 @@ class PyFSPro(App):
         self.cnf.imagestack.setKernel(self.cnf.blr_strength)
         self.cnf.imagestack.dyn_dark = self.cnf.dyn_dark
         if self.cnf.dyn_dark == 3:
-            self.cnf.imagestack.loadDark(np.full((self.cnf.video_height, self.cnf.video_width), self.cnf.imagestack.default_value, np.uint8))
+            self.cnf.imagestack.loadDark(
+                np.full((self.cnf.video_height, self.cnf.video_width), self.cnf.imagestack.default_value, np.uint8))
         if self.cnf.dyn_dark == 4:
             self.cnf.imagestack.loadDark(np.full((self.cnf.video_height, self.cnf.video_width), 0, np.uint8))
         self.cnf.flt_inp_kernel = self.cnf.inp_kernel * self.cnf.flt_inp_strength
@@ -508,8 +510,9 @@ class PyFSPro(App):
             if self.cnf.show_z:
                 self.cnf.rootwidget.zindicator_wid.text = str(int(outz))
             if self.cnf.log and not self.cnf.trfilter:
-                logstring = str(time.time()) + ',' + time.strftime("%d.%m.%Y %H:%M:%S") + ',' + str(outx) + ',' + str(
-                    outy) + ',' + str(outz) + ',' + str(self.cnf.joyx) + ',' + str(self.cnf.joyy) + '\n'
+                logstring = "%s,%s,%s,%s,%s,%s,%s\n" % (
+                    str(time.time()), time.strftime("%d.%m.%Y %H:%M:%S"), str(outx), str(outy), str(outz),
+                    str(self.cnf.joyx), str(self.cnf.joyy))
                 if self.cnf.logfile == 'STDOUT':
                     sys.stdout.write(logstring)
                 else:
@@ -700,14 +703,15 @@ class PyFSPro(App):
 
         # get output vector
         if self.cnf.vectype == 1:
-            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorAVG(self.cnf.imagestack.float_out)
+            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorAVG(
+                self.cnf.imagestack.float_out)
         else:
-            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorCUMZ(self.cnf.imagestack.float_out)
+            self.cnf.full_avg, self.cnf.x_avg, self.cnf.y_avg = self.cnf.imagestack.getVectorCUMZ(
+                self.cnf.imagestack.float_out)
 
         # record image sequence or video
         if self.cnf.recordi:
-            self.cnf.output_file = self.cnf.image_dst + \
-                                   str(self.cnf.imgindx).zfill(8) + '.bmp'
+            self.cnf.output_file = "%s%s.bmp" % (self.cnf.image_dst, str(self.cnf.imgindx).zfill(8))
             cv2.imwrite(self.cnf.output_fileself.cnf.out)
             self.cnf.imgindx += 1
         elif self.cnf.recordv:
@@ -915,7 +919,7 @@ class PyFSPro(App):
 
         # prepre background image
         self.cnf.background = np.full((self.cnf.video_height, self.cnf.video_width, 3),
-                                  self.cnf.imagestack.default_value, np.uint8)
+                                      self.cnf.imagestack.default_value, np.uint8)
         self.generate_xormasks()
 
         # prepare first frame
@@ -1047,7 +1051,7 @@ class PyFSPro(App):
                     self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
                                               self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
                                               cv2.BORDER_TRANSPARENT)
-            self.inp_old = self.inp
+                self.inp_old = self.inp
             self.cnf.iimage = self.inp.copy()
             self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
             if self.cnf.mode_prc == 0:
@@ -1074,13 +1078,14 @@ class PyFSPro(App):
                     self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height),
                                               self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
                                               cv2.BORDER_TRANSPARENT)
-
+                self.dsp_old = self.dsp
             # transient filter
             if self.cnf.trfilter:
                 self.cnf.trpre, self.cnf.trflt = self.cnf.imagestack.getTRFILTER(self.cnf.imagestack.float_out)
                 self.cnf.trpref = abs(self.cnf.trpre - self.cnf.trflt)
                 if self.cnf.log:
-                    logstring = str(time.time()) + ',' + time.strftime("%Y%m%d%H%M%S") + ',' + str(self.cnf.trflt) + ',' + str(self.cnf.trpref) + '\n'
+                    logstring = "%s,%s,%s,%s\n" % (
+                    str(time.time()), time.strftime("%Y%m%d%H%M%S"), str(self.cnf.trflt), str(self.cnf.trpref))
                     self.cnf.loghandle.write(logstring)
                 if self.cnf.trslope == 1:
                     if self.cnf.trpref <= self.cnf.trtrigger:
@@ -1089,8 +1094,6 @@ class PyFSPro(App):
                     self.create_output()
             else:
                 self.create_output()
-
-            self.dsp_old = self.dsp
 
 
 if __name__ == '__main__':

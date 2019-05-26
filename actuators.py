@@ -18,7 +18,11 @@ import pyautogui
 import liblo
 import time
 
+
 class Dummy:
+    __slots__ = ['cnf', 'name', 'x', 'y', 'z', 'oldx', 'oldy', 'oldz', 'jx', 'jy', 'joldx', 'joldy',
+                 'actuator_thread_run', 'sendrequest', 'requestthread']
+
     def __init__(self, cnf):
         self.name = 'Dummy'
         self.cnf = cnf
@@ -70,7 +74,8 @@ class Dummy:
         print('stop videofeed')
 
     def output(self):
-        print(str(time.time()) + ',' + time.strftime("%d.%m.%Y %H:%M:%S") + ',' + str(self.x) + ',' + str(self.y) + ',' + str(self.z))
+        print("%s,%s,%s,%s,%s" % (
+            str(time.time()), time.strftime("%d.%m.%Y %H:%M:%S"), str(self.x), str(self.y), str(self.z)))
 
     def request_thread(self):
         while self.actuator_thread_run:
@@ -154,7 +159,11 @@ class Paint(object):
             self.output()
             self.sendrequest.clear()
 
-class Mouse:
+
+class Mouse(object):
+    __slots__ = ['cnf', 'name', 'url', 'screenx', 'screeny', 'x', 'y', 'oldx', 'oldy', 'centerx', 'centery', 'xfactor',
+                 'yfactor', 'actuator_thread_run', 'requestthread', 'sendrequest']
+
     def __init__(self, cnf):
         self.name = 'Mouse'
         self.cnf = cnf
@@ -215,7 +224,10 @@ class Mouse:
             self.sendrequest.clear()
 
 
-class OSC:
+class OSC(object):
+    __slots__ = ['cnf', 'name', 'url', 'x', 'y', 'z', 'oldx', 'oldy', 'oldz', 'jx', 'jy', 'joldx', 'joldy', 'oscclient',
+                 'video', 'actuator_thread_run', 'sendrequest', 'requestthread']
+
     def __init__(self, cnf):
         self.name = 'OSC'
         self.cnf = cnf
@@ -289,7 +301,10 @@ class OSC:
             self.joldy = self.jy
 
 
-class STSpilot:
+class STSpilot(object):
+    __slots__ = ['cnf', 'name', 'session', 'x', 'y', 'oldx', 'oldy', 'video', 'reqtimeout', 'sendrequest', 'url',
+                 'joystick', 'videofeed', 'actuator_thread_run', 'requestpayload', 'requestthread']
+
     def __init__(self, cnf):
         self.name = 'STSpilot'
         self.cnf = cnf
@@ -358,4 +373,3 @@ class STSpilot:
             self.sendrequest.wait()
             self.http_request()
             self.sendrequest.clear()
-
