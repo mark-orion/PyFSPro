@@ -20,6 +20,7 @@ class FrameStack(object):
                  'ulimit', 'llimit', 'pixelvalue', 'kernel_value', 'raw_inp', 'frame', 'tmp_frame',
                  'inp_frame', 'sum_frames', 'frame_stack', 'avg', 'sqd', 'sum_sqd', 'sqd_stack',
                  'dark_frame', 'var', 'sd', 'z', 'cumsum', 'left', 'right', 'upper', 'lower', 'full_avg', 'left_avg',
+                 'left_diff', 'right_diff', 'upper_diff', 'lower_diff','left_sd', 'right_sd', 'upper_sd', 'lower_sd',
                  'right_avg', 'left_cumz', 'right_cumz', 'upper_cumz', 'lower_cumz',
                  'upper_avg', 'lower_avg', 'x_avg', 'y_avg', 'raw_out', 'float_out', 'r', 'c',
                  'max_inp', 'min_inp', 'max_out', 'min_out', 'kernel', 'i', 'proc_out',
@@ -32,10 +33,27 @@ class FrameStack(object):
         self.flip_y = False
         self.blr_inp = False
         self.blr_out = False
+        self.left = []
+        self.right = []
+        self.upper = []
+        self.lower = []
+        self.left_diff = []
+        self.right_diff = []
+        self.upper_diff = []
+        self.lower_diff = []
+        self.full_avg = 0
+        self.left_avg = 0
+        self.right_avg = 0
+        self.upper_avg = 0
+        self.lower_avg = 0
         self.left_cumz = 0
         self.right_cumz = 0
         self.upper_cumz = 0
         self.lower_cumz = 0
+        self.left_sd = 0
+        self.right_sd = 0
+        self.upper_sd = 0
+        self.lower_sd = 0
         self.max_value = 255
         self.default_value = 127.5
         self.min_value = 0
@@ -137,18 +155,18 @@ class FrameStack(object):
         self.right_avg = np.nanmean(self.right)
         self.upper_avg = np.nanmean(self.upper)
         self.lower_avg = np.nanmean(self.lower)
-        left_diff = self.left - self.left_avg
-        left_sd = np.sqrt(np.sum(np.square(left_diff)) / self.left.size)
-        self.left_cumz += np.sum(left_diff / left_sd)
-        right_diff = self.right - self.right_avg
-        right_sd = np.sqrt(np.sum(np.square(right_diff)) / self.right.size)
-        self.right_cumz += np.sum(right_diff / right_sd)
-        upper_diff = self.upper - self.upper_avg
-        upper_sd = np.sqrt(np.sum(np.square(upper_diff)) / self.upper.size)
-        self.upper_cumz += np.sum(upper_diff / upper_sd)
-        lower_diff = self.lower - self.lower_avg
-        lower_sd = np.sqrt(np.sum(np.square(lower_diff)) / self.lower.size)
-        self.lower_cumz += np.sum(lower_diff / lower_sd)
+        self.left_diff = self.left - self.left_avg
+        self.left_sd = np.sqrt(np.sum(np.square(self.left_diff)) / self.left.size)
+        self.left_cumz += np.sum(self.left_diff / self.left_sd)
+        self.right_diff = self.right - self.right_avg
+        self.right_sd = np.sqrt(np.sum(np.square(self.right_diff)) / self.right.size)
+        self.right_cumz += np.sum(self.right_diff / self.right_sd)
+        self.upper_diff = self.upper - self.upper_avg
+        self.upper_sd = np.sqrt(np.sum(np.square(self.upper_diff)) / self.upper.size)
+        self.upper_cumz += np.sum(self.upper_diff / self.upper_sd)
+        self.lower_diff = self.lower - self.lower_avg
+        self.lower_sd = np.sqrt(np.sum(np.square(self.lower_diff)) / self.lower.size)
+        self.lower_cumz += np.sum(self.lower_diff / self.lower_sd)
         self.x_avg = self.right_cumz - self.left_cumz
         self.y_avg = self.upper_cumz - self.lower_cumz
         return self.full_avg, self.x_avg, self.y_avg

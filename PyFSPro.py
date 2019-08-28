@@ -953,7 +953,7 @@ class PyFSPro(App):
         self.apply_ui_args()
 
         # run worker threads or loop
-        self.apply_ui_args()
+        self.apply_ui_args() 
         if self.cnf.single_thread:
             Clock.schedule_interval(self.single_thread, self.cnf.output_fps)
         else:
