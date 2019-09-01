@@ -433,6 +433,10 @@ class PyFSPro(App):
             self.cnf.input_channel = 10
         elif value == 'RNDX':
             self.cnf.input_channel = 11
+        elif value == 'RNDXA':
+            self.cnf.input_channel = 12
+        elif value == 'RNDXC':
+            self.cnf.input_channel = 13
         else:
             self.cnf.input_channel = 0
 
@@ -842,7 +846,7 @@ class PyFSPro(App):
         parser.add_argument('-ho', '--hide_output', action='store_true',
                             help='Hide output image')
         parser.add_argument('-ic', '--input_channel',
-                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX')
+                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX, RNDXA, RNDXC')
         parser.add_argument('-is', '--input_source',
                             help='Input Source: Filename, camera index or PICAMERA')
         parser.add_argument('-iw', '--input_width',
@@ -1035,12 +1039,22 @@ class PyFSPro(App):
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 255
             elif self.cnf.input_channel == 11:
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
+                self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 255
+            elif self.cnf.input_channel == 12:
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
                 if self.cnf.xorvalue:
                     self.cnf.xorvalue = False
                     self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2) * 255
                 else:
                     self.cnf.xorvalue = True
                     self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 255
+            elif self.cnf.input_channel == 13:
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
+                xor1 = np.bitwise_xor(self.inp, self.cnf.xormask1) * 100
+                self.inp = self.imageinput.grab_frame()
+                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
+                xor2 = np.bitwise_xor(self.inp, self.cnf.xormask2) * 100
+                self.inp = xor1 + xor2
             if self.cnf.equ_inp == 1:
                 self.inp = cv2.equalizeHist(self.inp)
             elif self.cnf.equ_inp == 2:
