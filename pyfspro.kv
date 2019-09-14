@@ -55,6 +55,7 @@
     playmode_wid: my_playmode
     trf_wid: my_trf
     vectype_wid: my_vectype
+    mask_wid: my_mask
 
     FloatLayout:
         FloatLayout:
@@ -104,6 +105,11 @@
                     id: my_playmode
                     text: '>'
                     values: ('>', '>||', '||')
+                Spinner:
+                    size_hint_x: 0.3
+                    id: my_mask
+                    text: 'Msk-OFF'
+                    values: ('Msk-OFF', 'XOR', 'XORA', 'XORC')
                 Spinner:
                     size_hint_x: 0.3
                     id: my_proc
@@ -313,7 +319,7 @@
             Spinner:
                 id: my_ichan
                 text: 'BW'
-                values: ('BW', 'R', 'G', 'B', 'H', 'S', 'V', 'Y', 'Cr', 'Cb', 'RND', 'RNDX', 'RNDXA', 'RNDXC')
+                values: ('BW', 'R', 'G', 'B', 'H', 'S', 'V', 'Y', 'Cr', 'Cb', 'RND')
             Button:
                 id: my_inifile
                 text: 'Save\nConfig'

@@ -5,6 +5,8 @@ Multi purpose realtime frame sequence and video processor for a wide range of ap
 * Realtime Astronomical video processing for live presentations.
 * Software image intensifier (night vision).
 * Weak video signal detection and enhancement.
+* Experiments with random number / event generation through camera noise and other video sources.  
+
 This is the GUI version of PyFSPro with a Kivy based graphical user interface.  
 The older command line only (non Kivy) version of PyFSPro can be found in the 'cli' folder.
 More information and and a dataflow diagram can be found in the [PyFSPro Wiki](https://github.com/mark-orion/PyFSPro/wiki)  
@@ -75,6 +77,8 @@ The GUI is divided in five main sections:
 ## Description of GUI control elements
 * Input / Output - show / hide input or output video.
 * \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output). Looping and pausing at end are not working with a camera as input source.
+* Msk-OFF - choose masking function for input frame (OFF, XOR, XORA, XORC).  
+XOR: Chequerboard inversion of pixels. XORA: Alternation between two chequerboard patterns. XORC: Sum of pattern applied to the actual frame and inverse pattern applied to the previous frame.  
 * Proc-OFF - choose processing mode (OFF, AVG, DIFF, CUM-Z).  
 AVG: Average of whole stack. DIFF: Frame - Darkframe. CUM-Z: Cumulative sum of Z-Scores.  
 * Dark-OFF - choose darkframe mode for DIFF and CUMSUM (OFF, DynDark, Static, Grey). DynDark uses rolling average and Static uses the current frame as dark frame.
@@ -91,9 +95,8 @@ AVG: Average of whole stack. DIFF: Frame - Darkframe. CUM-Z: Cumulative sum of Z
 * G, O, Auto - the sliders set Gain and Offset (contrast, brightness). Auto finds the optimum values for best dynamic resolution.
 * Blur - toggle blurring.
 * Hist - show input or output histogram (useful for camera adjustment).
-* BW - choose channel from various color spaces or LSB mask for random number generation (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX).  
-RND returns LSB * 127  
-RNDX works like RND but the output is XOR masked with a "chequerboard" array of ones and zeroes. In order to reduce bias, an inverted array is used for every second frame.    
+* BW - choose channel from various color spaces or LSB mask for random number generation (BW = Greyscale, R, G, B, H, S, V, Y, Cr, Cb, RND).  
+RND returns LSB * 255      
 * Save Config - save current configuration. The default save location is ./output/ and can be changed with the -od / --output_dir option.
 * Rec-Off - save the output stream as video or image sequence. The default save location is ./output/ and can be changed with the -od / --output_dir option.
 * Data Display - Show vector scope marker on the screen.
@@ -112,6 +115,7 @@ A snapshot of the current configuration can be saved by pressing the "Save Confi
 or any folder defined via the -od / --output_dir command line option.  
 Use the -c / --config_file option to load a configuration file on startup.  
 Additional command line options can be used to override the ones specified in the configuration file.
+Please be aware that configuration files might not work with different versions of the program.
 
 ## Files and Folders in the build directory
 * PyFSPro.py - the main program.

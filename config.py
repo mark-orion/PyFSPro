@@ -33,7 +33,7 @@ class Settings(object):
                  'flt_inp_name', 'flt_out_name', 'rootwidget', 'imagestack', 'disp_image', 'oimage',
                  'iimage', 'act', 'vecz', 'procthread', 'numframes', 'raspicam', 'timestring',
                  'cap_prop_frame_width', 'cap_prop_frame_height', 'cap_prop_pos_frames', 'prop_fourcc', 'xorvalue',
-                 'xormask1', 'xormask2', 'background', 'actuator_class', 'vectype']
+                 'xormask1', 'xormask2', 'mask', 'background', 'actuator_class', 'vectype']
 
     def __init__(self):
         self.Config = ConfigParser()
@@ -172,6 +172,7 @@ class Settings(object):
         self.red = (0, 0, 255)
         self.blue = (255, 0, 0)
         self.black = (0, 0, 0)
+        self.mask = 0
         # self.set_defaults()
 
     def gettime(self):
@@ -203,6 +204,7 @@ class Settings(object):
         self.Config.set('Input', 'color_channel', widget.ichan_wid.text)
 
         # Section 'Processor'
+        self.Config.set('Processor', 'mask', widget.mask_wid.text)
         self.Config.set('Processor', 'mode_prc', widget.proc_wid.text)
         self.Config.set('Processor', 'dyn_dark', widget.dark_wid.text)
         self.Config.set('Processor', 'blr_strength', self.blr_strength)
@@ -283,6 +285,7 @@ class Settings(object):
                 self.Config.get('Input', 'offset_inp'))
             widget.ichan_wid.text = self.Config.get('Input', 'color_channel')
             # Section 'Processor'
+            widget.mask_wid.text = self.Config.get('Processor', 'mask')
             widget.proc_wid.text = self.Config.get('Processor', 'mode_prc')
             widget.dark_wid.text = self.Config.get('Processor', 'dyn_dark')
             widget.vectype_wid.text = self.Config.get('Processor', 'vectype')

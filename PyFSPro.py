@@ -23,7 +23,7 @@ except:
 
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
-#os.environ["KIVY_NO_CONSOLELOG"] = "1"
+os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
 # kivy imports
 from kivy.app import App
@@ -104,10 +104,10 @@ class MyScreen(BoxLayout):
     trf_wid = ObjectProperty()
     playmode_wid = ObjectProperty()
     vectype_wid = ObjectProperty()
+    mask_wid = ObjectProperty()
 
 
 class PyFSPro(App):
-
     title = 'Python Frame Sequence Processor'
 
     def on_stop(self):
@@ -431,12 +431,6 @@ class PyFSPro(App):
             self.cnf.input_channel = 9
         elif value == 'RND':
             self.cnf.input_channel = 10
-        elif value == 'RNDX':
-            self.cnf.input_channel = 11
-        elif value == 'RNDXA':
-            self.cnf.input_channel = 12
-        elif value == 'RNDXC':
-            self.cnf.input_channel = 13
         else:
             self.cnf.input_channel = 0
 
@@ -483,6 +477,16 @@ class PyFSPro(App):
             self.cnf.vectype = 2
         else:
             self.cnf.rootwidget.vectype_wid.text = 'Datamode\nAVG'
+
+    def mask_callback(self, instance, value):
+        if value == 'XOR':
+            self.cnf.mask = 1
+        elif value == 'XORA':
+            self.cnf.mask = 2
+        elif value == 'XORC':
+            self.cnf.mask = 3
+        else:
+            self.cnf.mask = 0
 
     def img2tex(self, img):
         buf1 = cv2.flip(img, 0)
@@ -702,6 +706,8 @@ class PyFSPro(App):
             self.cnf.rootwidget.dark_wid.text = self.args.darkframe_mode
         if self.args.vector_mode is not None:
             self.cnf.rootwidget.vectype_wid.text = 'Datamode\n' + self.args.vector_mode
+        if self.args.inp_mask is not None:
+            self.cnf.rootwidget.mask_wid.text = self.args.inp_mask
 
     def create_output(self):
         self.cnf.oimage = self.dsp.copy()
@@ -722,19 +728,19 @@ class PyFSPro(App):
         # record image sequence or video
         if self.cnf.recordi:
             self.cnf.output_file = "%s%s.bmp" % (self.cnf.image_dst, str(self.cnf.imgindx).zfill(8))
-            cv2.imwrite(self.cnf.output_file,self.cnf.out)
+            cv2.imwrite(self.cnf.output_file, self.cnf.out)
             self.cnf.imgindx += 1
         elif self.cnf.recordv:
             self.cnf.video.writeFrame(self.cnf.out)
 
     def generate_xormasks(self):
-        one = np.uint8(1)
+        one = np.uint8(255)
         self.cnf.xormask1 = np.zeros((self.cnf.video_height, self.cnf.video_width), np.uint8)
         for v in range(0, self.cnf.video_width, 2):
             for h in range(0, self.cnf.video_height, 2):
                 self.cnf.xormask1[h, v] = one
                 self.cnf.xormask1[h + 1, v + 1] = one
-        self.cnf.xormask2 = np.bitwise_xor(self.cnf.xormask1, 1)
+        self.cnf.xormask2 = np.bitwise_xor(self.cnf.xormask1, one)
 
     def build(self):
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -816,6 +822,7 @@ class PyFSPro(App):
         self.cnf.rootwidget.ostab_wid.bind(state=self.ostab_callback)
         self.cnf.rootwidget.oimage_wid.bind(size=self.oimage_size_callback)
         self.cnf.rootwidget.vectype_wid.bind(text=self.vectype_callback)
+        self.cnf.rootwidget.mask_wid.bind(text=self.mask_callback)
         Window.bind(on_joy_axis=self.on_joy_axis)
         Window.bind(on_joy_hat=self.on_joy_hat)
         Window.bind(on_joy_button_down=self.on_joy_button_down)
@@ -846,7 +853,7 @@ class PyFSPro(App):
         parser.add_argument('-ho', '--hide_output', action='store_true',
                             help='Hide output image')
         parser.add_argument('-ic', '--input_channel',
-                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb, RND, RNDX, RNDXA, RNDXC')
+                            help='Input Channel: BW, R, G, B, H, S, V, Y, Cr, Cb, RND')
         parser.add_argument('-is', '--input_source',
                             help='Input Source: Filename, camera index or PICAMERA')
         parser.add_argument('-iw', '--input_width',
@@ -865,6 +872,8 @@ class PyFSPro(App):
         parser.add_argument('-ig', '--input_gain', help='Input Gain')
         parser.add_argument('-ii', '--input_stabilizer', action='store_true',
                             help='Enable input image stabilizer')
+        parser.add_argument('-im', '--inp_mask',
+                            help='Set input mask: OFF, XOR, XORA, XORC')
         parser.add_argument('-in', '--input_denoise', action='store_true',
                             help='Input Denoise')
         parser.add_argument('-l', '--log',
@@ -938,6 +947,7 @@ class PyFSPro(App):
         self.cnf.disp_image = self.inp.copy()
         self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
         self.cnf.oimage = self.inp.copy()
+        self.cnf.iimage = self.inp.copy()
         self.inp_old = self.inp.copy()
         self.inp_raw = self.inp.copy()
         self.dsp_old = self.inp.copy()
@@ -1037,24 +1047,6 @@ class PyFSPro(App):
                     cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
             elif self.cnf.input_channel == 10:
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 255
-            elif self.cnf.input_channel == 11:
-                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
-                self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 255
-            elif self.cnf.input_channel == 12:
-                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
-                if self.cnf.xorvalue:
-                    self.cnf.xorvalue = False
-                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2) * 255
-                else:
-                    self.cnf.xorvalue = True
-                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1) * 255
-            elif self.cnf.input_channel == 13:
-                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
-                xor1 = np.bitwise_xor(self.inp, self.cnf.xormask1) * 100
-                self.inp = self.imageinput.grab_frame()
-                self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1)
-                xor2 = np.bitwise_xor(self.inp, self.cnf.xormask2) * 100
-                self.inp = xor1 + xor2
             if self.cnf.equ_inp == 1:
                 self.inp = cv2.equalizeHist(self.inp)
             elif self.cnf.equ_inp == 2:
@@ -1072,7 +1064,20 @@ class PyFSPro(App):
                                               self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
                                               cv2.BORDER_TRANSPARENT)
                 self.inp_old = self.inp
-            self.cnf.iimage = self.inp.copy()
+            if self.cnf.mask == 1:
+                self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1)
+            elif self.cnf.mask == 2:
+                if self.cnf.xorvalue:
+                    self.cnf.xorvalue = False
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask2)
+                else:
+                    self.cnf.xorvalue = True
+                    self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1)
+            elif self.cnf.mask == 3:
+                xor1 = np.bitwise_and(np.bitwise_xor(self.inp, self.cnf.xormask1),127)
+                xor2 = np.bitwise_and(np.bitwise_xor(self.cnf.iimage, self.cnf.xormask2),127)
+                self.cnf.iimage = self.inp.copy()
+                self.inp = xor1 + xor2
             self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
             if self.cnf.mode_prc == 0:
                 self.dsp = self.cnf.imagestack.getINP()
@@ -1105,7 +1110,7 @@ class PyFSPro(App):
                 self.cnf.trpref = abs(self.cnf.trpre - self.cnf.trflt)
                 if self.cnf.log:
                     logstring = "%s,%s,%s,%s\n" % (
-                    str(time.time()), time.strftime("%Y%m%d%H%M%S"), str(self.cnf.trflt), str(self.cnf.trpref))
+                        str(time.time()), time.strftime("%Y%m%d%H%M%S"), str(self.cnf.trflt), str(self.cnf.trpref))
                     self.cnf.loghandle.write(logstring)
                 if self.cnf.trslope == 1:
                     if self.cnf.trpref <= self.cnf.trtrigger:
