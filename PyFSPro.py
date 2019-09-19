@@ -736,7 +736,7 @@ class PyFSPro(App):
             self.cnf.rootwidget.mask_wid.text = self.args.inp_mask
 
     def create_output(self):
-        self.cnf.oimage = self.dsp.copy()
+        self.cnf.oimage[:] = self.dsp
         # create output image
         if self.cnf.pseudoc:
             self.cnf.out = cv2.applyColorMap(self.cnf.oimage, self.cnf.color_mode)
@@ -1102,7 +1102,7 @@ class PyFSPro(App):
             elif self.cnf.mask == 3:
                 xor1 = np.bitwise_and(np.bitwise_xor(self.inp, self.cnf.xormask1),127)
                 xor2 = np.bitwise_and(np.bitwise_xor(self.cnf.iimage, self.cnf.xormask2),127)
-                self.cnf.iimage = self.inp.copy()
+                self.cnf.iimage[:] = self.inp
                 self.inp = xor1 + xor2
             self.cnf.stack_status = self.cnf.imagestack.addFrame(self.inp)
             if self.cnf.mode_prc == 0:

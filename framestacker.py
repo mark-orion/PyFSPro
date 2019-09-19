@@ -88,7 +88,7 @@ class FrameStack(object):
 
     def addFloatFrame(self, frame):
         self.raw_inp = frame
-        self.tmp_frame = np.copy(self.raw_inp)
+        self.tmp_frame[:] = self.raw_inp
         if self.flip_x:
             self.tmp_frame = np.flipud(self.tmp_frame)
         if self.flip_y:
@@ -102,7 +102,7 @@ class FrameStack(object):
             for self.c in range(self.width):
                 self.frame[:, self.c] = np.convolve(
                     self.frame[:, self.c], self.kernel, 'same')
-        self.inp_frame = np.copy(self.frame)
+        self.inp_frame[:] = self.frame
         self.sum_frames -= (self.frame_stack[self.index] - self.frame)
         self.frame_stack[self.index] = self.frame
         self.avg = self.sum_frames / self.stackrange
@@ -251,6 +251,7 @@ class FrameStack(object):
             self.stackrange = 1
         self.dark_frame = np.copy(self.initframe)
         self.frame = np.copy(self.initframe)
+        self.tmp_frame = np.copy(self.initframe)
         self.inp_frame = np.copy(self.initframe)
         self.raw_inp = np.copy(self.initframe)
         self.raw_out = np.copy(self.initframe)
