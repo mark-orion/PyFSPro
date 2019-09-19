@@ -16,7 +16,7 @@ class FrameStack(object):
     __slots__ = ['dyn_dark', 'filling_stack', 'flip_x', 'flip_y', 'blr_inp', 'blr_out',
                  'max_value', 'default_value', 'min_value', 'index', 'gain_inp', 'gain_out',
                  'offset_inp', 'offset_out', 'stacksize', 'stackrange', 'width', 'height',
-                 'center_x', 'center_y', 'kernel_size',
+                 'center_x', 'center_y', 'kernel_size', 'cumz',
                  'ulimit', 'llimit', 'pixelvalue', 'kernel_value', 'raw_inp', 'frame', 'tmp_frame',
                  'inp_frame', 'sum_frames', 'frame_stack', 'avg', 'sqd', 'sum_sqd', 'sqd_stack',
                  'dark_frame', 'var', 'sd', 'z', 'cumsum', 'left', 'right', 'upper', 'lower', 'full_avg', 'left_avg',
@@ -27,6 +27,10 @@ class FrameStack(object):
                  'initframe', 'prefilter', 'trfilter', 'trpre', 'trflt']
 
     def __init__(self, stacksize, stackrange, width, height):
+        self.width = int(width)
+        self.height = int(height)
+        self.center_x = int(self.width / 2)
+        self.center_y = int(self.height / 2)
         self.dyn_dark = True
         self.filling_stack = True
         self.flip_x = False
@@ -64,10 +68,6 @@ class FrameStack(object):
         self.offset_out = 0.0
         self.stacksize = stacksize
         self.stackrange = stackrange
-        self.width = int(width)
-        self.height = int(height)
-        self.center_x = int(self.width / 2)
-        self.center_y = int(self.height / 2)
         self.kernel_size = 7
         self.kernel = []
         self.setKernel(self.kernel_size)
@@ -103,14 +103,13 @@ class FrameStack(object):
                 self.frame[:, self.c] = np.convolve(
                     self.frame[:, self.c], self.kernel, 'same')
         self.inp_frame = np.copy(self.frame)
-        self.sum_frames = (self.sum_frames -
-                           self.frame_stack[self.index] + self.frame)
+        self.sum_frames -= (self.frame_stack[self.index] - self.frame)
         self.frame_stack[self.index] = self.frame
         self.avg = self.sum_frames / self.stackrange
         if self.dyn_dark == 1:
             self.dark_frame = self.avg
         self.sqd = np.square(self.frame - self.avg)
-        self.sum_sqd = self.sum_sqd - self.sqd_stack[self.index] + self.sqd
+        self.sum_sqd -= (self.sqd_stack[self.index] - self.sqd)
         self.sqd_stack[self.index] = self.sqd
         self.var = self.sum_sqd / self.stackrange
         self.sd = np.sqrt(self.var)
@@ -138,8 +137,12 @@ class FrameStack(object):
         return self.postProcess(np.absolute(self.inp_frame - self.dark_frame))
 
     def getCUMSUM(self):
-        self.cumsum = self.cumsum + self.z
-        return self.postProcess(self.cumsum)
+        self.cumsum += (self.inp_frame - self.dark_frame)
+        return self.postProcess(np.absolute(self.cumsum))
+
+    def getCUMZ(self):
+        self.cumz += self.z
+        return self.postProcess(self.cumz)
 
     def setVECROI(self, img):
         self.left = img[0:self.height,0:self.center_x]
@@ -190,7 +193,8 @@ class FrameStack(object):
         return self.trpre, self.trflt
 
     def resetCUMSUM(self):
-        self.cumsum = self.uniFrame(self.default_value)
+        self.cumsum[:] = self.uniFrame(self.default_value)
+        self.cumz[:] = self.uniFrame(self.default_value)
 
     def loadDark(self, frame):
         self.dark_frame = np.float32(frame)
@@ -226,15 +230,15 @@ class FrameStack(object):
         for self.i in range(self.stackrange):
             self.frame_stack[self.i] = self.initframe
             self.sqd_stack[self.i] = self.initframe
-        self.frame = self.initframe
-        self.inp_frame = self.initframe
-        self.raw_inp = self.initframe
-        self.raw_out = self.initframe
-        self.sum_frames = self.initframe
-        self.sum_sqd = self.initframe
-        self.z = self.initframe
-        self.prefilter = self.initframe
-        self.trfilter = self.initframe
+        self.frame[:] = self.initframe
+        self.inp_frame[:] = self.initframe
+        self.raw_inp[:] = self.initframe
+        self.raw_out[:] = self.initframe
+        self.sum_frames[:] = self.initframe
+        self.sum_sqd[:] = self.initframe
+        self.z[:] = self.initframe
+        self.prefilter[:] = self.initframe
+        self.trfilter[:] = self.initframe
         self.index = 0
         self.resetCUMSUM()
         self.filling_stack = True
@@ -245,20 +249,22 @@ class FrameStack(object):
             self.stackrange = self.stacksize
         if self.stackrange < 1:
             self.stackrange = 1
-        self.dark_frame = self.initframe
-        self.frame = self.initframe
-        self.inp_frame = self.initframe
-        self.raw_inp = self.initframe
-        self.raw_out = self.initframe
-        self.sum_frames = self.initframe
-        self.sum_sqd = self.initframe
-        self.z = self.initframe
-        self.prefilter = self.initframe
-        self.trfilter = self.initframe
+        self.dark_frame = np.copy(self.initframe)
+        self.frame = np.copy(self.initframe)
+        self.inp_frame = np.copy(self.initframe)
+        self.raw_inp = np.copy(self.initframe)
+        self.raw_out = np.copy(self.initframe)
+        self.sum_frames = np.copy(self.initframe)
+        self.sum_sqd = np.copy(self.initframe)
+        self.z = np.copy(self.initframe)
+        self.cumz = np.copy(self.initframe)
+        self.cumsum = np.copy(self.initframe)
+        self.prefilter = np.copy(self.initframe)
+        self.trfilter = np.copy(self.initframe)
         self.frame_stack = []
         self.sqd_stack = []
         for self.i in range(self.stackrange):
-            self.frame_stack.append(self.initframe)
-            self.sqd_stack.append(self.initframe)
+            self.frame_stack.append(np.copy(self.initframe))
+            self.sqd_stack.append(np.copy(self.initframe))
         self.index = 0
         self.filling_stack = True

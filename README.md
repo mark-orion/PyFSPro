@@ -79,10 +79,10 @@ The GUI is divided in five main sections:
 * \> - control video processing: \> Play and Loop through video file, \>\|\| Play and Pause at end, \|\| Pause. The pause option will pause the entire system (input, processing, output). Looping and pausing at end are not working with a camera as input source.
 * Msk-OFF - choose masking function for input frame (OFF, XOR, XORA, XORC).  
 XOR: Chequerboard inversion of pixels. XORA: Alternation between two chequerboard patterns. XORC: Sum of pattern applied to the actual frame and inverse pattern applied to the previous frame.  
-* Proc-OFF - choose processing mode (OFF, AVG, DIFF, CUM-Z).  
-AVG: Average of whole stack. DIFF: Frame - Darkframe. CUM-Z: Cumulative sum of Z-Scores.  
+* Proc-OFF - choose processing mode (OFF, AVG, DIFF, CUMSUM, CUM-Z).  
+AVG: Average of whole stack. DIFF: Frame - Darkframe. CUMSUM: Cumulative sum of DIFF. CUM-Z: Cumulative sum of Z-Scores.  
 * Dark-OFF - choose darkframe mode for DIFF and CUMSUM (OFF, DynDark, Static, Grey). DynDark uses rolling average and Static uses the current frame as dark frame.
-* Reset - resets all gain and offset settings to default values. Resets cumulative summing when in CUMSUM mode.
+* Reset - Reset stack.
 * TR-OFF - Transient Filter (OFF, Rising Intensity Slope, Falling Intensity Slope).
 * The top slider sets the sensitivity of the vector output or the triggerlevel in transient mode.
 * The bottom slider sets the stack size. The number of frames is displayed to the right. It turns green when the stack is full and rolling.

@@ -325,8 +325,12 @@ class PyFSPro(App):
             self.cnf.mode_prc = 1
         elif value == 'DIFF':
             self.cnf.mode_prc = 2
-        elif value == 'CUM-Z':
+        elif value == 'CUMSUM':
+            self.cnf.imagestack.resetCUMSUM()
             self.cnf.mode_prc = 3
+        elif value == 'CUM-Z':
+            self.cnf.imagestack.resetCUMSUM()
+            self.cnf.mode_prc = 4
         else:
             self.cnf.mode_prc = 0
             self.cnf.rootwidget.proc_wid.background_normal = 'atlas://data/images/defaulttheme/button'
@@ -921,7 +925,7 @@ class PyFSPro(App):
         parser.add_argument('-ps', '--processing_state',
                             help='Processing State: PLAY, LOOP, PAUSE')
         parser.add_argument('-pm', '--processing_mode',
-                            help='Set Processing Mode: AVG, DIFF, CUM-Z')
+                            help='Set Processing Mode: AVG, DIFF, CUMSUM, CUM-Z')
         parser.add_argument('-pz', '--stack_size',
                             help='Image Stacking (No. of frames to stack)')
         parser.add_argument('-st', '--single_thread', action='store_true',
@@ -1110,6 +1114,8 @@ class PyFSPro(App):
                 self.dsp = self.cnf.imagestack.getDIFF()
             elif self.cnf.mode_prc == 3:
                 self.dsp = self.cnf.imagestack.getCUMSUM()
+            elif self.cnf.mode_prc == 4:
+                self.dsp = self.cnf.imagestack.getCUMZ()
             if self.cnf.equ_out == 1:
                 self.dsp = cv2.equalizeHist(self.dsp)
             elif self.cnf.equ_out == 2:
