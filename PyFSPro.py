@@ -213,20 +213,24 @@ class PyFSPro(App):
             self.cnf.dnz_inp = False
 
     def iequ_callback(self, instance, value):
+        self.cnf.rootwidget.iequ_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'HIST':
             self.cnf.equ_inp = 1
         elif value == 'CLAHE':
             self.cnf.equ_inp = 2
         else:
             self.cnf.equ_inp = 0
+            self.cnf.rootwidget.iequ_wid.background_normal = 'atlas://data/images/defaulttheme/button'
 
     def iflt_callback(self, instance, value):
+        self.cnf.rootwidget.iflt_wid.background_normal = 'atlas://data/images/defaulttheme/button'
         self.cnf.flt_inp = 0
         for k in range(1, self.cnf.numkernels):
             if self.cnf.kernels.get_kernel(k)[0] == value:
                 self.cnf.flt_inp = k
                 self.cnf.flt_inp_name, self.cnf.inp_kernel, self.cnf.flt_inp_strength = self.cnf.kernels.get_kernel(
                     self.cnf.flt_inp)
+                self.cnf.rootwidget.iflt_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
                 self.apply_settings()
 
     def istab_callback(self, instance, value):
@@ -278,20 +282,24 @@ class PyFSPro(App):
             self.cnf.dnz_out = False
 
     def oequ_callback(self, instance, value):
+        self.cnf.rootwidget.oequ_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'HIST':
             self.cnf.equ_out = 1
         elif value == 'CLAHE':
             self.cnf.equ_out = 2
         else:
             self.cnf.equ_out = 0
+            self.cnf.rootwidget.oequ_wid.background_normal = 'atlas://data/images/defaulttheme/button'
 
     def oflt_callback(self, instance, value):
         self.cnf.flt_out = 0
+        self.cnf.rootwidget.oflt_wid.background_normal = 'atlas://data/images/defaulttheme/button'
         for k in range(1, self.cnf.numkernels):
             if self.cnf.kernels.get_kernel(k)[0] == value:
                 self.cnf.flt_out = k
                 self.cnf.flt_out_name, self.cnf.out_kernel, self.cnf.flt_out_strength = self.cnf.kernels.get_kernel(
                     self.cnf.flt_out)
+                self.cnf.rootwidget.oflt_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
                 self.apply_settings()
 
     def ostab_callback(self, instance, value):
@@ -312,6 +320,7 @@ class PyFSPro(App):
         self.apply_settings()
 
     def proc_callback(self, instance, value):
+        self.cnf.rootwidget.proc_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'AVG':
             self.cnf.mode_prc = 1
         elif value == 'DIFF':
@@ -320,9 +329,11 @@ class PyFSPro(App):
             self.cnf.mode_prc = 3
         else:
             self.cnf.mode_prc = 0
+            self.cnf.rootwidget.proc_wid.background_normal = 'atlas://data/images/defaulttheme/button'
         self.apply_settings()
 
     def dark_callback(self, instance, value):
+        self.cnf.rootwidget.dark_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'DynDark':
             self.cnf.dyn_dark = 1
         elif value == 'Static':
@@ -331,8 +342,10 @@ class PyFSPro(App):
             self.cnf.dyn_dark = 3
         elif value == 'Dark-OFF':
             self.cnf.dyn_dark = 4
+            self.cnf.rootwidget.dark_wid.background_normal = 'atlas://data/images/defaulttheme/button'
         else:
             self.cnf.rootwidget.dark_wid.text = 'Dark-OFF'
+            self.cnf.rootwidget.dark_wid.background_normal = 'atlas://data/images/defaulttheme/button'
         self.apply_settings()
 
     def reset_callback(self, instance):
@@ -349,6 +362,8 @@ class PyFSPro(App):
             self.cnf.dout_active = False
 
     def recorder_callback(self, instance, value):
+        self.cnf.rootwidget.recorder_wid.background_normal = ''
+        self.cnf.rootwidget.recorder_wid.background_color = (1,0,0,1)
         if value == 'Sequence':
             self.cnf.imgindx = 0
             self.cnf.image_dst = self.cnf.output_dir + self.cnf.gettime()
@@ -361,6 +376,8 @@ class PyFSPro(App):
         else:
             self.cnf.recordi = False
             self.cnf.recordv = False
+            self.cnf.rootwidget.recorder_wid.background_normal = 'atlas://data/images/defaulttheme/button'
+            self.cnf.rootwidget.recorder_wid.background_color = (1,1,1,1)
 
     def override_callback(self, instance, value):
         if value == 'down':
@@ -449,6 +466,7 @@ class PyFSPro(App):
             self.cnf.show_ohist = False
 
     def trf_callback(self, instance, value):
+        self.cnf.rootwidget.trf_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'Rise':
             self.cnf.trslope = 0
             self.cnf.trfilter = True
@@ -459,6 +477,7 @@ class PyFSPro(App):
             self.cnf.rootwidget.indzoom_wid.value = self.cnf.trtrigger * 100
         else:
             self.cnf.trfilter = False
+            self.cnf.rootwidget.trf_wid.background_normal = 'atlas://data/images/defaulttheme/button'
 
     def playmode_callback(self, instance, value):
         if value == '>':
@@ -481,6 +500,7 @@ class PyFSPro(App):
             self.cnf.rootwidget.vectype_wid.text = 'Datamode\nAVG'
 
     def mask_callback(self, instance, value):
+        self.cnf.rootwidget.mask_wid.background_normal = 'atlas://data/images/defaulttheme/button_pressed'
         if value == 'XOR':
             self.cnf.mask = 1
         elif value == 'XORA':
@@ -489,6 +509,7 @@ class PyFSPro(App):
             self.cnf.mask = 3
         else:
             self.cnf.mask = 0
+            self.cnf.rootwidget.mask_wid.background_normal = 'atlas://data/images/defaulttheme/button'
 
     def img2tex(self, img):
         buf1 = cv2.flip(img, 0)
