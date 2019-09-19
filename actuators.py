@@ -333,6 +333,7 @@ class STSpilot(object):
     def video_stop(self):
         self.video.state = 'stop'
         self.video.unload()
+        self.video.source = ''
 
     def transmit(self, x, y, z, jx, jy):
         self.x = int(x)

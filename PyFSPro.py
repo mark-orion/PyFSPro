@@ -24,6 +24,7 @@ except:
 # disable Kivy command line args and chatter on STDOUT
 os.environ["KIVY_NO_ARGS"] = "1"
 #os.environ["KIVY_NO_CONSOLELOG"] = "1"
+#os.environ["KIVY_VIDEO"] = "gstplayer"
 
 # kivy imports
 from kivy.app import App
@@ -242,11 +243,9 @@ class PyFSPro(App):
     def out_callback(self, instance, value):
         if value == 'down':
             self.cnf.act.video_stop()
-            time.sleep(2)
             self.cnf.show_out = True
         else:
             self.cnf.show_out = False
-            time.sleep(2)
             self.cnf.act.video_play()
 
     def oauto_callback(self, instance, value):
