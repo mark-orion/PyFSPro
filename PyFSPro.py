@@ -10,7 +10,7 @@ import gc
 import numpy as np
 import cv2
 
-from threading import Thread, Event
+from threading import Thread
 
 # scikit-video (scikit-video.org) is used for recording because of OpenCV
 # Linux bug
@@ -1048,29 +1048,23 @@ class PyFSPro(App):
             if self.cnf.input_channel == 0:
                 self.inp = cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY)
             elif self.cnf.input_channel == 1:
-                b, g, self.inp = cv2.split(self.inp)
+                self.inp = cv2.split(self.inp)[2]
             elif self.cnf.input_channel == 2:
-                b, self.inp, r = cv2.split(self.inp)
+                self.inp = cv2.split(self.inp)[1]
             elif self.cnf.input_channel == 3:
-                self.inp, g, r = cv2.split(self.inp)
+                self.inp = cv2.split(self.inp)[0]
             elif self.cnf.input_channel == 4:
-                self.inp, s, v = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))[0]
             elif self.cnf.input_channel == 5:
-                h, self.inp, v = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))[1]
             elif self.cnf.input_channel == 6:
-                h, s, self.inp = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2HSV))[2]
             elif self.cnf.input_channel == 7:
-                self.inp, cr, cb = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))[0]
             elif self.cnf.input_channel == 8:
-                y, self.inp, cb = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))[1]
             elif self.cnf.input_channel == 9:
-                y, cr, self.inp = cv2.split(
-                    cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))
+                self.inp = cv2.split(cv2.cvtColor(self.inp, cv2.COLOR_BGR2YCR_CB))[2]
             elif self.cnf.input_channel == 10:
                 self.inp = np.bitwise_and(cv2.cvtColor(self.inp, cv2.COLOR_BGR2GRAY), 1) * 255
             if self.cnf.equ_inp == 1:
@@ -1089,7 +1083,7 @@ class PyFSPro(App):
                     self.inp = cv2.warpAffine(self.inp, self.transform, (self.cnf.video_width, self.cnf.video_height),
                                               self.inp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
                                               cv2.BORDER_TRANSPARENT)
-                self.inp_old = self.inp
+                self.inp_old[:] = self.inp
             if self.cnf.mask == 1:
                 self.inp = np.bitwise_xor(self.inp, self.cnf.xormask1)
             elif self.cnf.mask == 2:
@@ -1131,7 +1125,7 @@ class PyFSPro(App):
                     self.dsp = cv2.warpAffine(self.dsp, self.transform, (self.cnf.video_width, self.cnf.video_height),
                                               self.dsp_raw, cv2.INTER_NEAREST | cv2.WARP_INVERSE_MAP,
                                               cv2.BORDER_TRANSPARENT)
-                self.dsp_old = self.dsp
+                self.dsp_old[:] = self.dsp
             # transient filter
             if self.cnf.trfilter:
                 self.cnf.trpre, self.cnf.trflt = self.cnf.imagestack.getTRFILTER(self.cnf.imagestack.float_out)
